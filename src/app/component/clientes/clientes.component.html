@@ -1,0 +1,55 @@
+
+<div class="container">
+  <div class="left-panel">
+    <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()" class="cliente-form">
+      <mat-form-field appearance="fill">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Nombre">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" type="email" placeholder="Email">
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="telefono" placeholder="Teléfono">
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit">Guardar Cliente</button>
+    </form>
+  </div>
+
+<!-- clientes.component.html -->
+<div class="right-panel">
+  <h2>Lista de Clientes</h2>
+  <div *ngIf="clientes$ | async as clientes; else loading">
+    <table class="mat-elevation-z8 full-width">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Teléfono</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cliente of clientes">
+          <td>{{ cliente.nombre }}</td>
+          <td>{{ cliente.email }}</td>
+          <td>{{ cliente.telefono }}</td>
+          <td>
+            <button mat-button color="warn" (click)="deleteCliente(cliente.id)">Eliminar</button>
+            <button mat-button (click)="editCliente(cliente)">Editar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #loading>
+    Cargando clientes...
+  </ng-template>
+</div>
+</div>
+

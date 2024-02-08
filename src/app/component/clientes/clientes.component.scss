@@ -1,0 +1,69 @@
+.container {
+  display: flex;
+  flex-wrap: wrap; /* Permite que los paneles se ajusten en pantallas más pequeñas */
+  gap: 20px; /* Espacio entre los paneles */
+  margin: 20px; /* Margen alrededor de todo el contenedor para evitar que los elementos toquen los bordes de la pantalla */
+}
+
+.left-panel, .right-panel {
+  flex: 1;
+  padding: 20px; /* Padding dentro de cada panel para no tener los elementos pegados a los bordes */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para dar profundidad */
+  border-radius: 8px; /* Bordes redondeados para un look más moderno */
+  background-color: #fff; /* Fondo blanco para los paneles */
+}
+
+.cliente-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Espacio entre los campos del formulario */
+}
+
+mat-form-field {
+  width: 100%; /* Asegura que los campos del formulario usen todo el ancho disponible */
+}
+
+.full-width {
+  width: 100%; /* Asegura que la tabla use todo el ancho disponible */
+}
+
+table {
+  border-collapse: collapse; /* Colapsa los bordes de la tabla para un look más limpio */
+  margin-top: 20px; /* Espacio antes de la tabla */
+}
+
+th, td {
+  text-align: left; /* Alinea el texto a la izquierda */
+  padding: 8px; /* Padding en las celdas para más espacio alrededor del texto */
+  border-bottom: 1px solid #eee; /* Línea sutil entre filas */
+}
+
+th {
+  color: #666; /* Color más oscuro para los encabezados de la tabla */
+  font-weight: bold; /* Hace que los encabezados de la tabla sean más gruesos */
+}
+
+td {
+  color: #333; /* Color para el texto de las celdas */
+}
+
+button {
+  margin-right: 8px; /* Espacio a la derecha de cada botón para evitar que se toquen */
+}
+
+/* Estilos para el botón de eliminar para que se destaque como una acción potencialmente destructiva */
+button[color="warn"] {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column; /* Coloca los paneles uno encima del otro en pantallas pequeñas */
+  }
+
+  .left-panel, .right-panel {
+    width: 100%; /* Hace que los paneles usen todo el ancho disponible */
+  }
+}

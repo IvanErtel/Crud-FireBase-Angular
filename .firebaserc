@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "crud-firebase-b7441"
+  },
+  "targets": {
+    "crud-firebase-b7441": {
+      "hosting": {
+        "crud-firebase": [
+          "crud-firebase-b7441"
+        ]
+      }
+    }
+  }
+}
