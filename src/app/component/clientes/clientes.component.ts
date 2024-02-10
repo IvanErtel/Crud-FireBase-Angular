@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject, of, takeUntil } from 'rxjs';
 import { FirebaseService } from '../../services/firebaseService.service';
 import { Cliente } from '../../interfaces/cliente.interface';
 import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
@@ -32,6 +32,7 @@ export class ClientesComponent implements OnInit{
   clientes$?: Observable<Cliente[]>;
   clienteForm: FormGroup;
   editingClienteId: string | null = null;
+  private unsubscribe$ = new Subject<void>();
 
   constructor(private firebaseService: FirebaseService, private fb: FormBuilder){
     this.clienteForm = this.fb.group({
@@ -46,7 +47,18 @@ export class ClientesComponent implements OnInit{
   }
 
   loadClientes(): void {
-    this.clientes$ = this.firebaseService.getClientes();
+    // Modifica la llamada para usar takeUntil
+    this.firebaseService.getClientes()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(clientes => {
+        // Asignación existente o lógica que quieras realizar con los clientes
+        this.clientes$ = of(clientes); // Asumiendo que quieres asignar los clientes a la variable observable
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next(); // Señala que se va a desuscribir
+    this.unsubscribe$.complete(); // Completa el Subject para prevenir fugas de memoria
   }
 
   onSubmit(): void {

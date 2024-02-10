@@ -1,7 +1,7 @@
 // services/producto.service.ts
 import { Injectable } from '@angular/core';
 import { Firestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query, where } from '@angular/fire/firestore';
-import { Observable, forkJoin, from } from 'rxjs';
+import { Observable, forkJoin, from, of } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import { Producto } from '../interfaces/producto.interface';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
@@ -10,6 +10,10 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
     providedIn: 'root',
 })
 export class ProductoService {
+    private productosCache: Producto[] | null = null;
+    private lastFetchProductos: number = 0;
+    private cacheDuration = 5 * 60 * 1000;
+
     constructor(private firestore: Firestore, private afs: AngularFirestore) { }
 
     // Métodos para manejar productos
@@ -19,10 +23,19 @@ export class ProductoService {
     }
 
     obtenerProductos(): Observable<Producto[]> {
-        const productosRef = collection(this.firestore, 'productos');
-        return from(getDocs(productosRef)).pipe(
-            map(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Producto))
-        );
+        if (this.productosCache && (Date.now() - this.lastFetchProductos) < this.cacheDuration) {
+            return of(this.productosCache);
+        } else {
+            const productosRef = collection(this.firestore, 'productos');
+            return from(getDocs(productosRef)).pipe(
+                map(snapshot => {
+                    const productos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }) as Producto);
+                    this.productosCache = productos;
+                    this.lastFetchProductos = Date.now();
+                    return productos;
+                })
+            );
+        }
     }
 
     eliminarProducto(id: string): Observable<void> {

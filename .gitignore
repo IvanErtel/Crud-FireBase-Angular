@@ -45,3 +45,12 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+
+# Firebase secrets
+*.firebase/*
+!**/firebase.json
+!**/firestore.rules
+!**/firestore.indexes.json
+.env
+.env.local
+.env.production
