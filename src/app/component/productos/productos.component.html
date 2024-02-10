@@ -1,1 +1,78 @@
-<p>productos works!</p>
+<!-- productos.component.html -->
+<div class="container">
+    <div class="left-panel">
+      <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="producto-form">
+        <mat-form-field appearance="fill">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" placeholder="Nombre del producto">
+        </mat-form-field>
+  
+        <mat-form-field appearance="fill">
+          <mat-label>Precio de Compra</mat-label>
+          <input matInput formControlName="precioCompra" placeholder="Precio de Compra" type="number">
+        </mat-form-field>
+  
+        <mat-form-field appearance="fill">
+          <mat-label>Precio de Venta</mat-label>
+          <input matInput formControlName="precioVenta" placeholder="Precio de Venta" type="number">
+        </mat-form-field>
+  
+        <mat-form-field appearance="fill">
+          <mat-label>Cantidad</mat-label>
+          <input matInput formControlName="cantidad" placeholder="Cantidad" type="number">
+        </mat-form-field>
+  
+        <mat-form-field appearance="fill">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" placeholder="Descripción"></textarea>
+        </mat-form-field>
+  
+        <mat-form-field appearance="fill">
+          <mat-label>Categoría</mat-label>
+          <select matNativeControl formControlName="categoriaId">
+            <option *ngFor="let categoria of categorias$ | async" [value]="categoria.id">
+                {{ categoria.nombre }}
+              </option>
+          </select>
+        </mat-form-field>
+        <form [formGroup]="categoriaForm" (ngSubmit)="agregarCategoria()">
+            <mat-form-field appearance="fill">
+              <mat-label>Nombre de la Categoría</mat-label>
+              <input matInput formControlName="nombre">
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Agregar Categoría</button>
+          </form>
+  
+        <button mat-raised-button color="primary" type="submit">Guardar Producto</button>
+      </form>
+    </div>
+    <div class="productos-container">
+      <h2>Lista de Productos</h2>
+      <table class="productos-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio de Compra</th>
+            <th>Precio de Venta</th>
+            <th>Cantidad</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let producto of productos$ | async">
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.precioCompra | currency }}</td>
+            <td>{{ producto.precioVenta | currency }}</td>
+            <td>{{ producto.cantidad }}</td>
+            <td>{{ getCategoriaNombre(producto.categoriaId) }}</td>
+            <td>
+              <button mat-button color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
+              <button mat-button (click)="editarProducto(producto)">Editar</button>
+              <button mat-button (click)="abrirDialogoActualizarCantidad(producto)">Act. Cantidad</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>

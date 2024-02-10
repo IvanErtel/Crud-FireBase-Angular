@@ -1,0 +1,17 @@
+.login-form, .logged-in-message {
+  max-width: 400px;
+  margin: 40px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.logged-in-message h2 {
+  margin-bottom: 20px;
+  text-align: center;
+}

@@ -1,0 +1,16 @@
+<h2 mat-dialog-title class="dialog-title">Actualizar Cantidad</h2>
+<mat-dialog-content class="dialog-content">
+  <p>Stock actual: {{stockActual}}</p>
+  <p>nombre: {{nombreProducto}}</p>
+  <p>categoria: {{nombreCategoria}}</p>
+  <form [formGroup]="cantidadForm" class="update-form">
+    <mat-form-field appearance="fill" class="custom-mat-form-field">
+      <mat-label>Cantidad a agregar o descontar</mat-label>
+      <input matInput formControlName="cantidadAdicional" type="number">
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions class="dialog-actions">
+  <button mat-button [mat-dialog-close]="null" class="cancel-button">Cancelar</button>
+  <button mat-button color="primary" [mat-dialog-close]="cantidadForm.value" cdkFocusInitial class="update-button">Actualizar</button>
+</mat-dialog-actions>

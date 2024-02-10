@@ -45,9 +45,9 @@ export const routes: Routes = [
       component: NavbarComponent,
       children: [
         { path: 'clientes', component: ClientesComponent, title: 'Clientes', canActivate: [AuthGuard] },
-        { path: 'login', component: LoginComponent, title: 'Login', canActivate: [AuthGuard]},
-        { path: 'productos', component: ProductosComponent, title: 'Productos', canActivate: [AuthGuard] },
-        { path: 'proveedor', component: ProveedoresComponent, title: 'Proveedores', canActivate: [AuthGuard] },
+        { path: 'login', component: LoginComponent, title: 'Login'},
+        { path: 'productos', component: ProductosComponent, title: 'Productos', canActivate: [AuthGuard]},
+        { path: 'proveedor', component: ProveedoresComponent, title: 'Proveedores', canActivate: [AuthGuard]},
         { path: '', redirectTo: 'login', pathMatch: 'full' },
       ]
     },

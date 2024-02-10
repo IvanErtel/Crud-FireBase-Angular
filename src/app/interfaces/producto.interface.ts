@@ -1,8 +1,10 @@
 export interface Producto {
-    id?: string;
-    categoria: string;
-    nombre: string;
-    descripcion: string;
-    precio: number;
-    proveedorId: string;
+  id?: string;
+  categoriaId: string;
+  nombre: string;
+  cantidad: number;
+  descripcion: string;
+  precioCompra: number; // Precio de compra al proveedor
+  precioVenta?: number; // Precio de venta al cliente
+  proveedorId: string;
   }

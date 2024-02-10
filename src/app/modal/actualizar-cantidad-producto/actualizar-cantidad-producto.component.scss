@@ -1,0 +1,47 @@
+.dialog-title {
+    color: #1976d2; /* Cambia el color del título para que coincida con el tema */
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  .dialog-content {
+    padding: 24px;
+    width: 100%; /* Asegura que el contenido use todo el ancho disponible sin crear scroll horizontal */
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+  }
+  
+  .custom-mat-form-field {
+    width: 100%; /* Utiliza todo el ancho disponible */
+    margin-bottom: 20px; /* Añade espacio debajo del campo de formulario */
+  }
+  
+  .dialog-actions {
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between; /* Espacia los botones uniformemente */
+    border-top: 1px solid #eee; /* Añade una línea para separar las acciones del contenido */
+  }
+  
+  .cancel-button, .update-button {
+    min-width: 100px; /* Asegura que los botones tengan un tamaño adecuado */
+    margin: 0 8px; /* Añade un poco de margen para separar los botones */
+    border-radius: 5px;
+  }
+  
+  .update-button {
+    color: white;
+    background-color: #1976d2; /* Añade color al botón de actualizar para resaltarlo */
+  }
+  
+  .update-button:hover {
+    background-color: #115293; /* Oscurece el botón al pasar el mouse para un feedback visual */
+  }
+  
+  .cancel-button {
+    background-color: #757575; /* Color más suave para el botón cancelar */
+    color: white;
+  }
+  .cancel-button:hover {
+    background-color: #4b4b4b;
+  }
+  
