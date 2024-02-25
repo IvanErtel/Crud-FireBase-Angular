@@ -1,27 +1,59 @@
-# CrudFirebase
+# Sistema de Gestión de Inventario
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.6.
+Este proyecto es un sistema de gestión de inventario diseñado para pequeñas y medianas empresas que buscan una solución sencilla para controlar sus productos, ventas, y clientes. Utiliza Angular para el front-end y Firebase como backend, ofreciendo autenticación de usuarios, almacenamiento de datos en tiempo real y almacenamiento de archivos.
 
-## Development server
+## Características
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- **Gestión de Clientes:** Registro, actualización y eliminación de clientes.
+- **Inventario de Productos:** Control completo sobre el inventario incluyendo la adición, edición y eliminación de productos.
+- **Registro de Ventas:** Permite registrar ventas, asociándolas a clientes y productos específicos.
+- **Autenticación de Usuarios:** Inicio de sesión seguro con verificación de correo electrónico.
+- **Carga de Imágenes:** Los usuarios pueden cargar imágenes para cada producto.
 
-## Code scaffolding
+## Tecnologías Utilizadas
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- **[Angular](https://angular.io/):** Framework de desarrollo para construir aplicaciones web y móviles en HTML, CSS y TypeScript.
+- **[Firebase](https://firebase.google.com/):** Plataforma de desarrollo de aplicaciones web y móviles que proporciona herramientas para el almacenamiento y sincronización de datos en tiempo real, autenticación y hosting.
+- **[Angular Material](https://material.angular.io/):** Biblioteca de componentes de UI para Angular basados en Material Design.
+- **[RxJS](https://rxjs.dev/):** Biblioteca para programación reactiva usando Observables, para facilitar la composición de código asíncrono o basado en callbacks.
 
-## Build
+## Inicio Rápido
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Para clonar y ejecutar este proyecto localmente, sigue estos pasos:
 
-## Running unit tests
+```bash
+git clone [https://github.com/tuUsuario/tuProyecto.git](https://github.com/IvanErtel/Crud-FireBase-Angular)https://github.com/IvanErtel/Crud-FireBase-Angular
+cd Crud-FireBase-Angular
+npm install
+ng serve
+Navega a http://localhost:4200/
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Estructura del Proyecto
+```
+Una breve descripción de la estructura principal del proyecto:
 
-## Running end-to-end tests
+    src/app/components/: Contiene los componentes de la aplicación como clientes, productos, ventas, etc.
+    src/app/services/: Servicios para interactuar con Firebase, incluyendo autenticación, CRUD de productos y clientes, etc.
+    src/environments/: Archivos de configuración del entorno (excluidos del control de versiones por contener información sensible).
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## Seguridad
 
-## Further help
+Este proyecto implementa medidas de seguridad como la autenticación de Firebase y reglas de seguridad en Firestore para:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+- Proteger los datos sensibles.
+- Asegurar que solo los usuarios autenticados puedan acceder a ciertas funcionalidades.
+
+## Acceso al Proyecto
+
+Este proyecto está configurado con una base de datos Firebase y otros servicios que incurren en costos basados en el uso. Para proteger la integridad del proyecto y evitar cargos inesperados, el acceso directo a la base de datos y otros servicios no está disponible públicamente.
+
+Si estás interesado/a en explorar más a fondo este proyecto, ver una demostración, o discutir posibilidades de colaboración, estaré más que feliz de hablar contigo. Por favor, no dudes en contactarme directamente a través de [https://www.linkedin.com/in/alan-ivan-ertel/]
+
+Aprecio tu comprensión y estoy ansioso por compartir las ideas y el trabajo detrás de este proyecto contigo.
+
+¡Gracias por tu interés!
+
+
+## Autor
+
+- **Alan Ivan Ertel Ramirez** - Desarrollo inicial - [Ivan Ertel](https://github.com/IvanErtel)
