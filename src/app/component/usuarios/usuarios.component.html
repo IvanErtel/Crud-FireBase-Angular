@@ -1,0 +1,43 @@
+<div class="user-container">
+    <h2>Crear Nuevo Usuario</h2>
+    <form [formGroup]="userForm" (ngSubmit)="createUser()">
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" placeholder="Introduce el email" type="email">
+        <mat-error *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+          Por favor, introduce una dirección de correo válida.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Contraseña</mat-label>
+        <input matInput formControlName="password" placeholder="Introduce la contraseña" [type]="hide ? 'password' : 'text'">
+        <button mat-icon-button matSuffix (click)="hide = !hide" type="button">
+          <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+          La contraseña es requerida.
+        </mat-error>
+      </mat-form-field>
+  
+      <mat-form-field appearance="fill">
+        <mat-label>Rol</mat-label>
+        <mat-select formControlName="role">
+          <mat-option value="user">Usuario</mat-option>
+          <mat-option value="admin">Administrador</mat-option>
+        </mat-select>
+      </mat-form-field>
+  
+      <div *ngIf="usuarios.length > 0">
+        <h3>Usuarios Activos</h3>
+        <ul>
+          <li *ngFor="let usuario of usuarios">
+            Email: {{ usuario.email }}, Rol: {{ usuario.role }}
+          </li>
+        </ul>
+      </div>
+      
+      <button mat-raised-button color="primary" type="submit" [disabled]="!userForm.valid">Crear Usuario</button>
+    </form>
+  </div>
+  

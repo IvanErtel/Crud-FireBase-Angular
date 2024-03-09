@@ -1,0 +1,64 @@
+<div class="venta-container">
+    <h2>Registrar Nueva Venta</h2>
+  
+    <!-- Formulario de Venta -->
+    <form [formGroup]="ventaForm" (ngSubmit)="onSubmit()">
+  
+      <!-- Selector de Cliente -->
+      <mat-form-field appearance="fill">
+        <mat-label>Cliente</mat-label>
+        <mat-select formControlName="clienteId">
+          <mat-option *ngFor="let cliente of clientes$ | async" [value]="cliente.id">
+            {{ cliente.nombre }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+  
+      <!-- Selector de Producto -->
+      <div formArrayName="detalles" *ngFor="let detalle of detalles.controls; let i=index">
+        <div [formGroupName]="i" class="detalle-venta">
+          <mat-form-field appearance="fill">
+            <mat-label>Producto</mat-label>
+            <mat-select formControlName="productoId">
+              <mat-option *ngFor="let producto of productos$ | async" [value]="producto.id">
+                {{ producto.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+  
+          <!-- Cantidad -->
+          <mat-form-field appearance="fill">
+            <mat-label>Cantidad</mat-label>
+            <input matInput type="number" formControlName="cantidad">
+          </mat-form-field>
+  
+          <!-- Precio de Venta (Opcional, si quieres mostrarlo/editarlo) -->
+          <mat-form-field appearance="fill">
+            <mat-label>Precio de Venta</mat-label>
+            <input matInput type="number" formControlName="precioVenta">
+          </mat-form-field>
+  
+          <!-- Botón para eliminar detalle -->
+          <button mat-icon-button color="warn" (click)="eliminarDetalle(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+  
+      <!-- Botón para agregar otro producto -->
+      <button mat-raised-button color="primary" type="button" (click)="agregarDetalle()">Agregar Producto</button>
+  
+      <!-- Total de la Venta -->
+      <div class="total-venta">
+        <h3>Total: {{ calcularTotal() | currency }}</h3>
+      </div>
+  
+      <!-- Botones de acción -->
+      <div class="acciones-venta">
+        <button mat-raised-button color="primary" type="submit">Registrar Venta</button>
+        <button mat-raised-button color="warn" type="button" (click)="cancelar()">Cancelar</button>
+      </div>
+  
+    </form>
+  </div>
+  
