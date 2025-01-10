@@ -14,6 +14,8 @@ import { Categoria } from '../../interfaces/categoria.interface';
 import { CommonModule } from '@angular/common';
 import { ActualizarCantidadProductoComponent } from '../../modal/actualizar-cantidad-producto/actualizar-cantidad-producto.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { finalize } from 'rxjs/operators';
+import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { Inject } from '@angular/core';
 
 @Component({
@@ -26,15 +28,17 @@ import { Inject } from '@angular/core';
   styleUrls: ['./productos.component.scss'],
 })
 export class ProductosComponent implements OnInit {
+  mostrarFormulario: boolean = false;
   productos$: Observable<Producto[]> = this.productoService.obtenerProductos();
   productoForm: FormGroup;
   editingProductoId: string | null = null;
   categorias$: Observable<Categoria[]>;
   categoriaForm: FormGroup;
   categoriasMap = new Map<string, string>();
+  imagenUrl: string = '';
   private unsubscribe$ = new Subject<void>();
   
-  constructor(private fb: FormBuilder, private productoService: ProductoService, private categoriaService: CategoriaService, public dialog: MatDialog)
+  constructor(private fb: FormBuilder, private productoService: ProductoService, private categoriaService: CategoriaService, public dialog: MatDialog, private storage: AngularFireStorage)
   {
     this.categoriaForm = this.fb.group({
       nombre: ['', Validators.required],
@@ -71,21 +75,46 @@ export class ProductosComponent implements OnInit {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
+
+  toggleFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    console.log('Mostrar formulario:', this.mostrarFormulario); // Verifica el valor
+  }
   
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const filePath = `productos/${file.name}`;
+      const fileRef = this.storage.ref(filePath);
+      const task = this.storage.upload(filePath, file);
+
+      task.snapshotChanges().pipe(
+        finalize(() => {
+          fileRef.getDownloadURL().subscribe((url: string) => {
+            this.imagenUrl = url; // Aquí guardamos la URL de la imagen
+          });
+        })
+      ).subscribe();
+    }
+  }
+
   onSubmit(): void {
     if (this.productoForm.valid) {
-      const producto = this.productoForm.value;
+      const producto = {
+      ...this.productoForm.value,
+      imagenUrl: this.imagenUrl
+    };
       if (this.editingProductoId) {
-        // Actualizar producto existente
         this.productoService.actualizarProducto(this.editingProductoId, producto).subscribe(() => {
           console.log('Producto actualizado');
           this.resetFormAndEditingState();
+          this.cargarProductos(); // Recargar productos
         });
       } else {
-        // Agregar nuevo producto
         this.productoService.agregarProducto(producto).subscribe(id => {
           console.log(`Producto agregado con ID: ${id}`);
           this.resetFormAndEditingState();
+          this.cargarProductos(); // Recargar productos
         });
       }
     }
