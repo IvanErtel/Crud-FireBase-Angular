@@ -7,5 +7,4 @@ export interface Producto {
   precioCompra: number; // Precio de compra al proveedor
   precioVenta?: number; // Precio de venta al cliente
   proveedorId: string;
-  imagenUrl?: string;
   }

@@ -4,7 +4,7 @@
         <a mat-list-item routerLink="">Login</a>
         <a mat-list-item routerLink="clientes">Clientes</a>
         <a mat-list-item routerLink="productos">Productos</a>
-        <a mat-list-item routerLink="proveedor">Proveedores</a>
+        <!-- <a mat-list-item routerLink="proveedor">Proveedores</a> -->
         <button mat-raised-button color="primary" *ngIf="isLoggedIn" (click)="logout()">Cerrar Sesión</button>
         <span *ngIf="isLoggedIn && email">{{email}}</span>
         <!-- Agrega más enlaces según necesites -->

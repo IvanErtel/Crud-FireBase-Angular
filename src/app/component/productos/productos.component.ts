@@ -1,10 +1,9 @@
-// productos.component.ts
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../interfaces/producto.interface';
 import { NavbarComponent } from '../navbar/navbar.component';
-import { Observable, Subject, switchMap, take } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,9 +13,10 @@ import { Categoria } from '../../interfaces/categoria.interface';
 import { CommonModule } from '@angular/common';
 import { ActualizarCantidadProductoComponent } from '../../modal/actualizar-cantidad-producto/actualizar-cantidad-producto.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { finalize } from 'rxjs/operators';
-import { AngularFireStorage } from '@angular/fire/compat/storage';
-import { Inject } from '@angular/core';
+import { DialogoGenericoComponent } from '../dialog/dialogo-generico.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { map } from 'rxjs/operators';
+
 
 @Component({
   selector: 'app-productos',
@@ -30,35 +30,103 @@ import { Inject } from '@angular/core';
 export class ProductosComponent implements OnInit {
   mostrarFormulario: boolean = false;
   productos$: Observable<Producto[]> = this.productoService.obtenerProductos();
+  productosFiltrados$: Observable<Producto[]>;
   productoForm: FormGroup;
   editingProductoId: string | null = null;
+  mostrarFormularioCategoria: boolean = false;
   categorias$: Observable<Categoria[]>;
   categoriaForm: FormGroup;
   categoriasMap = new Map<string, string>();
-  imagenUrl: string = '';
+  categoriaSeleccionada: string | null = null;
   private unsubscribe$ = new Subject<void>();
-  
-  constructor(private fb: FormBuilder, private productoService: ProductoService, private categoriaService: CategoriaService, public dialog: MatDialog, private storage: AngularFireStorage)
-  {
+  private filtroSubject = new BehaviorSubject<string>('');
+
+  constructor(private fb: FormBuilder, private productoService: ProductoService, 
+    private categoriaService: CategoriaService, public dialog: MatDialog,
+    private snackBar: MatSnackBar) {
+this.categoriaForm = this.fb.group({
+nombre: ['', Validators.required],
+});
+this.categorias$ = this.categoriaService.obtenerCategorias();
+this.productoForm = this.fb.group({
+nombre: ['', Validators.required],
+precioCompra: ['', [Validators.required, Validators.min(0)]],
+precioVenta: ['', [Validators.required, Validators.min(0)]],
+cantidad: ['', [Validators.required, Validators.min(1)]],
+descripcion: ['', Validators.required],
+categoriaId: ['',],
+});
+
+    // Formulario de categoría
     this.categoriaForm = this.fb.group({
       nombre: ['', Validators.required],
     });
+
+    // Obtener las categorías
     this.categorias$ = this.categoriaService.obtenerCategorias();
-    this.productoForm = this.fb.group({
-      nombre: ['', Validators.required],
-      precioCompra: ['', [Validators.required, Validators.min(0)]],
-      precioVenta: ['', [Validators.required, Validators.min(0)]],
-      cantidad: ['', [Validators.required, Validators.min(1)]],
-      descripcion: ['', Validators.required],
-      categoriaId: ['',],
-    });
-  }
+    
+
+// Filtra productos según el texto del filtro
+this.productosFiltrados$ = this.filtroSubject.pipe(
+  switchMap(filtro => 
+    this.productoService.obtenerProductos().pipe(
+      map((productos: Producto[]) => 
+        productos.filter((producto: Producto) => 
+          producto.nombre.toLowerCase().includes(filtro.toLowerCase())
+  )
+)
+)
+)
+);
+}
 
   ngOnInit(): void {
     this.cargarCategorias();
     this.cargarProductos();
   }
 
+  toggleFormularioCategoria(): void {
+    this.mostrarFormularioCategoria = !this.mostrarFormularioCategoria;
+    if (this.mostrarFormularioCategoria) {
+      this.mostrarFormulario = false; // Cierra el formulario de producto si se abre el de categoría
+    }
+  }
+  
+  toggleFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
+    if (this.mostrarFormulario) {
+      this.mostrarFormularioCategoria = false; // Cierra el formulario de categoría si se abre el de producto
+    }
+  }
+
+  // Método para guardar la categoría
+  guardarCategoria(): void {
+    if (this.categoriaForm.valid) {
+      const categoria = this.categoriaForm.value;
+      this.categoriaService.agregarCategoria(categoria).subscribe({
+        next: (id) => {
+          console.log('Categoría guardada con ID:', id);
+          this.mostrarFormularioCategoria = false;
+          this.categoriaForm.reset();
+          this.cargarCategorias();
+        },
+        error: (err) => {
+          console.error('Error al guardar la categoría:', err);
+          this.snackBar.open('Hubo un error al guardar la categoría. Inténtalo nuevamente.', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    }
+  }
+
+  // Método para cancelar la creación de una categoría
+  cancelarFormularioCategoria(): void {
+    this.categoriaForm.reset();
+    this.mostrarFormularioCategoria = false;
+  }
+  
   cargarCategorias(): void {
     this.categoriaService.obtenerCategorias().pipe(take(1)).subscribe(categorias => {
       categorias.forEach(categoria => {
@@ -76,45 +144,21 @@ export class ProductosComponent implements OnInit {
     this.unsubscribe$.complete();
   }
 
-  toggleFormulario(): void {
-    this.mostrarFormulario = !this.mostrarFormulario;
-    console.log('Mostrar formulario:', this.mostrarFormulario); // Verifica el valor
-  }
-  
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      const filePath = `productos/${file.name}`;
-      const fileRef = this.storage.ref(filePath);
-      const task = this.storage.upload(filePath, file);
-
-      task.snapshotChanges().pipe(
-        finalize(() => {
-          fileRef.getDownloadURL().subscribe((url: string) => {
-            this.imagenUrl = url; // Aquí guardamos la URL de la imagen
-          });
-        })
-      ).subscribe();
-    }
-  }
-
   onSubmit(): void {
     if (this.productoForm.valid) {
-      const producto = {
-      ...this.productoForm.value,
-      imagenUrl: this.imagenUrl
-    };
+      const producto = this.productoForm.value;
+  
       if (this.editingProductoId) {
         this.productoService.actualizarProducto(this.editingProductoId, producto).subscribe(() => {
           console.log('Producto actualizado');
           this.resetFormAndEditingState();
-          this.cargarProductos(); // Recargar productos
+          this.cargarProductos();
         });
       } else {
         this.productoService.agregarProducto(producto).subscribe(id => {
           console.log(`Producto agregado con ID: ${id}`);
           this.resetFormAndEditingState();
-          this.cargarProductos(); // Recargar productos
+          this.cargarProductos();
         });
       }
     }
@@ -125,30 +169,62 @@ export class ProductosComponent implements OnInit {
       this.editingProductoId = producto.id;
     } else {
       console.log('Error: El Producto no tiene ID');
+      this.snackBar.open('Error: El Producto no tiene ID', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-error'] 
+      });
     }
+  
+    this.mostrarFormulario = true; // Asegura que el formulario esté visible
     this.productoForm.setValue({
       nombre: producto.nombre,
       precioCompra: producto.precioCompra,
-      precioVenta: producto.precioVenta || 0, // Asumiendo que precioVenta puede no estar definido
+      precioVenta: producto.precioVenta || 0,
       cantidad: producto.cantidad,
       descripcion: producto.descripcion,
       categoriaId: producto.categoriaId,
     });
+  
+    // Desplaza hacia el formulario
+    setTimeout(() => {
+      const formularioElemento = document.querySelector('.producto-form');
+      formularioElemento?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+  
+  cancelarFormulario(): void {
+    this.productoForm.reset();  // Limpia el formulario
+    this.editingProductoId = null;  // Reinicia el modo de edición
+    this.mostrarFormulario = false;  // Cierra el formulario
   }
 
   eliminarProducto(id: string | undefined): void {
-    // Verifica si el ID está presente antes de intentar eliminar el producto
     if (!id) {
       console.error('Intento de eliminar un producto sin ID');
-      return; // Sale de la función si no hay ID, evitando la llamada al servicio
+      return;
     }
   
-    // Si el ID está presente, procede a eliminar el producto
-    this.productoService.eliminarProducto(id).subscribe(() => {
-      console.log('Producto eliminado');
-      this.cargarProductos(); // Recargar la lista de productos después de eliminar
+    const dialogRef = this.dialog.open(DialogoGenericoComponent, {
+      data: {
+        title: 'Confirmar Eliminación',
+        message: '¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      }
     });
-  }
+  
+    dialogRef.afterClosed().subscribe((resultado) => {
+      if (resultado === true) {
+        // Solo se elimina si el usuario confirmó
+        this.productoService.eliminarProducto(id).subscribe(() => {
+          console.log('Producto eliminado');
+          this.cargarProductos();
+        });
+      } else {
+        console.log('Eliminación cancelada');
+      }
+    });
+  }  
 
   resetFormAndEditingState(): void {
     this.productoForm.reset();
@@ -161,7 +237,7 @@ export class ProductosComponent implements OnInit {
       this.categoriaService.agregarCategoria(this.categoriaForm.value).subscribe({
         next: id => {
           console.log(`Categoría agregada con ID: ${id}`);
-          this.cargarCategorias(); // Recargar las categorías para actualizar la lista/dropdown
+          this.cargarCategorias();
           this.categoriaForm.reset();
         },
         error: error => console.error(error),
@@ -178,20 +254,62 @@ export class ProductosComponent implements OnInit {
       take(1),
       switchMap(producto => {
         const nuevaCantidad = producto.cantidad + cantidadAdicional;
+  
+        if (nuevaCantidad < 0) {
+          throw new Error(`La cantidad no puede ser negativa. Cantidad actual: ${producto.cantidad}, Intento de restar: ${Math.abs(cantidadAdicional)}`);
+        }
+  
         return this.productoService.actualizarProducto(id, { cantidad: nuevaCantidad });
       })
     ).subscribe({
       next: () => {
         console.log('Cantidad actualizada');
-        this.cargarProductos(); // Esto recargará la lista de productos.
+        this.cargarProductos();
       },
       error: error => {
         console.error('Error al actualizar la cantidad del producto', error);
+        this.snackBar.open('No es posible actualizar la cantidad a un valor negativo.', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']});
       }
     });
   }
 
+  obtenerProductosFiltrados(): Observable<Producto[]> {
+    return new Observable<Producto[]>(observer => {
+      this.productos$.pipe(take(1)).subscribe(productos => {
+        let productosFiltrados = productos;
   
+        if (this.filtroSubject.getValue()) {
+          productosFiltrados = productosFiltrados.filter(producto =>
+            producto.nombre.toLowerCase().includes(this.filtroSubject.getValue().toLowerCase())
+          );
+        }
+  
+        if (this.categoriaSeleccionada) {
+          productosFiltrados = productosFiltrados.filter(producto =>
+            producto.categoriaId === this.categoriaSeleccionada
+          );
+        }
+  
+        observer.next(productosFiltrados);
+        observer.complete();
+      });
+    });
+  }
+  
+  filtrarProductos(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const filtro = input.value.trim(); // Aseguramos que no haya espacios extra
+    this.filtroSubject.next(filtro); // Actualiza el filtro
+  }
+
+    // Filtrar por categoría
+    filtrarProductosPorCategoria(event: any): void {
+      this.categoriaSeleccionada = event.value;
+      this.productosFiltrados$ = this.obtenerProductosFiltrados();
+    }
+
   abrirDialogoActualizarCantidad(producto: Producto): void {
     const nombreCategoria = this.getCategoriaNombre(producto.categoriaId);
     const dialogRef = this.dialog.open(ActualizarCantidadProductoComponent, {
@@ -208,5 +326,4 @@ export class ProductosComponent implements OnInit {
       }
     });
   }
-
 }
