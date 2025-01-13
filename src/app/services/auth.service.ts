@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { from, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -21,5 +22,12 @@ export class AuthService {
   // Obtener el estado de autenticación del usuario
   getAuthState(): Observable<any> {
     return this.afAuth.authState;
+  }
+
+  // Obtener el userId (uid) del usuario autenticado
+  getUserId(): Observable<string | null> {
+    return this.afAuth.authState.pipe(
+      map(user => user ? user.uid : null)
+    );
   }
 }

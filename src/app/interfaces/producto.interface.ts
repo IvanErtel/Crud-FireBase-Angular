@@ -4,7 +4,8 @@ export interface Producto {
   nombre: string;
   cantidad: number;
   descripcion: string;
-  precioCompra: number; // Precio de compra al proveedor
-  precioVenta?: number; // Precio de venta al cliente
+  precioCompra: number;
+  precioVenta?: number;
   proveedorId: string;
+  userId?: string;
   }
