@@ -66,6 +66,24 @@
           <mat-label>Nombre de la Categoría</mat-label>
           <input matInput formControlName="nombre" placeholder="Nombre de la categoría">
         </mat-form-field>
+        <!-- Lista de Categorías -->
+<h3>Lista de Categorías</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let categoria of categorias$ | async">
+      <td>{{ categoria.nombre }}</td>
+      <td>
+        <button mat-button color="warn" (click)="eliminarCategoria(categoria.id)">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
         <div class="form-buttons">
           <button mat-raised-button color="primary" type="submit">Guardar Categoría</button>

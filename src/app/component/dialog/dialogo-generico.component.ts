@@ -21,4 +21,13 @@ export class DialogoGenericoComponent {
     public dialogRef: MatDialogRef<DialogoGenericoComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
+
+  onConfirm(): void {
+    this.dialogRef.close(true); // Cierra el diálogo y pasa el valor 'true' para indicar que se confirmó
+  }
+
+  onCancel(): void {
+    this.dialogRef.close(false); // Cierra el diálogo y pasa el valor 'false' para indicar que se canceló
+  }
+  
 }

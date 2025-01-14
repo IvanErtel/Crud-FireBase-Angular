@@ -121,6 +121,39 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
     }
   }
 
+  // Método para eliminar una categoría
+eliminarCategoria(id: string): void {
+  const dialogRef = this.dialog.open(DialogoGenericoComponent, {
+    data: {
+      title: 'Confirmar Eliminación',
+      message: '¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    }
+  });
+
+  dialogRef.afterClosed().subscribe((resultado) => {
+    if (resultado === true) {
+      // Llamamos al servicio para eliminar la categoría
+      this.categoriaService.eliminarCategoria(id).subscribe({
+        next: () => {
+          console.log('Categoría eliminada');
+          this.cargarCategorias(); // Recargamos las categorías después de eliminar
+        },
+        error: (err) => {
+          console.error('Error al eliminar la categoría:', err);
+          this.snackBar.open('Hubo un error al eliminar la categoría. Inténtalo nuevamente.', 'Cerrar', {
+            duration: 3000,
+            panelClass: ['snackbar-error']
+          });
+        }
+      });
+    } else {
+      console.log('Eliminación cancelada');
+    }
+  });
+}
+
   // Método para cancelar la creación de una categoría
   cancelarFormularioCategoria(): void {
     this.categoriaForm.reset();
@@ -129,6 +162,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
   
   cargarCategorias(): void {
     this.categoriaService.obtenerCategorias().pipe(take(1)).subscribe(categorias => {
+      this.categoriasMap.clear(); // Limpiamos el mapa antes de recargar las categorías
       categorias.forEach(categoria => {
         this.categoriasMap.set(categoria.id!, categoria.nombre);
       });
@@ -309,6 +343,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       this.categoriaSeleccionada = event.value;
       this.productosFiltrados$ = this.obtenerProductosFiltrados();
     }
+    
 
   abrirDialogoActualizarCantidad(producto: Producto): void {
     const nombreCategoria = this.getCategoriaNombre(producto.categoriaId);
@@ -326,10 +361,6 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       }
     });
   }
-
-  toggleDescripcion(producto: Producto): void {
-    producto.mostrarDescripcion = !producto.mostrarDescripcion;
-  }
-  
+   
 }
 
