@@ -1,18 +1,41 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, addDoc, updateDoc, doc, deleteDoc, query, where, collectionData, getDoc } from '@angular/fire/firestore';
-import { Observable, forkJoin, from } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, from } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import { Producto } from '../interfaces/producto.interface';
 import { AuthService } from './auth.service'; // Servicio para obtener el userId actual
+import { CategoriaService } from './categoria.service';
 
 @Injectable({
     providedIn: 'root',
-})
-export class ProductoService {
+  })
+  export class ProductoService {
+    private productosSubject = new BehaviorSubject<Producto[]>([]);
+    productos$ = this.productosSubject.asObservable();
+    private categoriasMapSubject = new BehaviorSubject<Map<string, string>>(new Map());
+    categoriasMap$ = this.categoriasMapSubject.asObservable();
+  
     constructor(
-        private firestore: Firestore,
-        private authService: AuthService
-    ) {}
+      private firestore: Firestore,
+      private authService: AuthService,
+      private categoriaService: CategoriaService
+    ) {
+      this.cargarProductos(); // Carga los productos iniciales
+      this.cargarCategorias(); // Carga las categorías iniciales
+    }
+  
+    private cargarProductos(): void {
+      this.obtenerProductos().subscribe(productos => {
+        this.productosSubject.next(productos);
+      });
+    }
+  
+    private cargarCategorias(): void {
+      this.categoriaService.obtenerCategorias().subscribe(categorias => {
+        const categoriasMap = new Map(categorias.map(c => [c.id, c.nombre]));
+        this.categoriasMapSubject.next(categoriasMap);
+      });
+    }
 
     agregarProducto(producto: Producto): Observable<string> {
         return this.authService.getUserId().pipe(

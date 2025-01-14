@@ -30,7 +30,7 @@ import { map } from 'rxjs/operators';
 export class ProductosComponent implements OnInit {
   mostrarFormulario: boolean = false;
   productos$: Observable<Producto[]> = this.productoService.obtenerProductos();
-  productosFiltrados$: Observable<Producto[]>;
+  productosFiltrados$: Observable<Producto[]> = this.productoService.productos$;
   productoForm: FormGroup;
   editingProductoId: string | null = null;
   mostrarFormularioCategoria: boolean = false;
@@ -279,8 +279,10 @@ eliminarCategoria(id: string): void {
     }
   }
 
-  getCategoriaNombre(categoriaId: string): string {
-    return this.categoriasMap.get(categoriaId) || 'Categoría no encontrada';
+  getCategoriaNombre(categoriaId: string): Observable<string> {
+    return this.productoService.categoriasMap$.pipe(
+      map(categoriasMap => categoriasMap.get(categoriaId) || 'Categoría no encontrada')
+    );
   }
 
   actualizarCantidadProducto(id: string, cantidadAdicional: number): void {

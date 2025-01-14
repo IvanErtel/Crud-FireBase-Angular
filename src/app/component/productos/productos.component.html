@@ -137,7 +137,9 @@
             <span *ngIf="producto.mostrarDetalles">{{ producto.descripcion }}</span>
             <a href="#" *ngIf="producto.descripcion.length > 50">{{ producto.mostrarDetalles ? 'Ver Menos' : 'Ver Más' }}</a>
           </td>
-          <td data-label="Categoría">{{ getCategoriaNombre(producto.categoriaId) }}</td>
+          <td data-label="Categoría">
+            {{ getCategoriaNombre(producto.categoriaId) | async }}
+          </td>        
           <td data-label="Acciones">
             <button mat-button color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
             <button mat-button (click)="editarProducto(producto)">Editar</button>
