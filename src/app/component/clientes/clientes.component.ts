@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, Subject, of, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of, takeUntil } from 'rxjs';
 import { FirebaseService } from '../../services/firebaseService.service';
 import { Cliente } from '../../interfaces/cliente.interface';
 import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
@@ -11,6 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-clientes',
@@ -29,12 +30,14 @@ import { MatTableModule } from '@angular/material/table';
   styleUrl: './clientes.component.scss'
 })
 export class ClientesComponent implements OnInit{
-  clientes$?: Observable<Cliente[]>;
+  clientes$: BehaviorSubject<Cliente[]> = new BehaviorSubject<Cliente[]>([]);
   clienteForm: FormGroup;
   editingClienteId: string | null = null;
   private unsubscribe$ = new Subject<void>();
 
-  constructor(private firebaseService: FirebaseService, private fb: FormBuilder){
+  constructor(private firebaseService: FirebaseService, 
+    private fb: FormBuilder,
+    private snackBar: MatSnackBar){
     this.clienteForm = this.fb.group({
       nombre: ['', Validators.required],
       email: ['', [ Validators.email]],
@@ -47,13 +50,9 @@ export class ClientesComponent implements OnInit{
   }
 
   loadClientes(): void {
-    // Modifica la llamada para usar takeUntil
-    this.firebaseService.getClientes()
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(clientes => {
-        // Asignación existente o lógica que quieras realizar con los clientes
-        this.clientes$ = of(clientes); // Asumiendo que quieres asignar los clientes a la variable observable
-      });
+    this.firebaseService.getClientes().pipe(takeUntil(this.unsubscribe$)).subscribe(clientes => {
+      this.clientes$.next(clientes); // Asigna los datos directamente al BehaviorSubject.
+    });
   }
 
   ngOnDestroy(): void {
@@ -65,26 +64,26 @@ export class ClientesComponent implements OnInit{
     if (this.clienteForm.valid) {
       const clienteData: Cliente = this.clienteForm.value;
       if (this.editingClienteId) {
-        // Actualizar el cliente existente
         this.firebaseService.updateCliente(this.editingClienteId, clienteData).subscribe({
           next: () => {
-            this.loadClientes();
-            this.resetFormAndEditingState(); // Limpia el formulario y restablece el estado de edición
+            this.snackBar.open('Cliente actualizado con éxito', 'Cerrar', { duration: 3000 });
+            this.loadClientes();  // Esto garantiza la recarga.
+            this.resetFormAndEditingState();
           },
           error: (error) => console.error(error),
         });
       } else {
-        // Agregar un nuevo cliente
         this.firebaseService.addCliente(clienteData).subscribe({
           next: () => {
-            this.loadClientes();
-            this.resetFormAndEditingState(); // Limpia el formulario y restablece el estado de edición
+            this.snackBar.open('Nuevo cliente cargado con éxito', 'Cerrar', { duration: 3000 });
+            this.loadClientes();  // Recarga la lista después de agregar.
+            this.resetFormAndEditingState();
           },
           error: (error) => console.error(error),
         });
       }
     }
-  }
+  }  
   
   resetFormAndEditingState(): void {
     this.clienteForm.reset();
@@ -100,12 +99,16 @@ export class ClientesComponent implements OnInit{
     });
   }
   
-  deleteCliente(clienteId: string): void{
-    this.firebaseService.deleteCliente(clienteId).subscribe(() => {
-      alert('Cliente eliminado Correctamente');
-      this.loadClientes();
-    })
+  deleteCliente(clienteId: string): void {
+    this.firebaseService.deleteCliente(clienteId).subscribe({
+      next: () => {
+        this.snackBar.open('Cliente eliminado correctamente', 'Cerrar', { duration: 3000 });
+        this.loadClientes();
+      },
+      error: (error) => console.error(error),
+    });
   }
+
   resetForm(): void {
     this.clienteForm.reset();
     this.editingClienteId = null; // Restablece el estado de edición

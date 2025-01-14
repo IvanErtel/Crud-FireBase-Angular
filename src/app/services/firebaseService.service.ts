@@ -18,7 +18,14 @@ export class FirebaseService {
   private lastFetch: number = 0;
   private cacheDuration = 5 * 60 * 1000;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {
+    this.authService.getAuthState().subscribe(user => {
+      if (!user) {
+        this.clientesCache = null; 
+        this.lastFetch = 0;
+      }
+    });
+  }
 
   // Agrega un nuevo cliente y devuelve un Observable del ID del documento creado
   addCliente(cliente: Cliente): Observable<string> {

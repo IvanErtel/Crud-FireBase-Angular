@@ -326,4 +326,10 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       }
     });
   }
+
+  toggleDescripcion(producto: Producto): void {
+    producto.mostrarDescripcion = !producto.mostrarDescripcion;
+  }
+  
 }
+

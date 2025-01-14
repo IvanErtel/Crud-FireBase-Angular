@@ -101,6 +101,7 @@
           <th>Precio de Compra</th>
           <th>Precio de Venta</th>
           <th>Cantidad</th>
+          <th>Descripción</th>
           <th>Categoría</th>
           <th>Acciones</th>
         </tr>
@@ -111,6 +112,13 @@
           <td data-label="Precio de Compra">{{ producto.precioCompra | currency }}</td>
           <td data-label="Precio de Venta">{{ producto.precioVenta | currency }}</td>
           <td data-label="Cantidad">{{ producto.cantidad }}</td>
+          <td data-label="Descripción" (click)="producto.mostrarDetalles = !producto.mostrarDetalles">
+            <span *ngIf="!producto.mostrarDetalles">
+              {{ producto.descripcion | slice: 0: 50 }}<span *ngIf="producto.descripcion.length > 50">...</span>
+            </span>
+            <span *ngIf="producto.mostrarDetalles">{{ producto.descripcion }}</span>
+            <a href="#" *ngIf="producto.descripcion.length > 50">{{ producto.mostrarDetalles ? 'Ver Menos' : 'Ver Más' }}</a>
+          </td>
           <td data-label="Categoría">{{ getCategoriaNombre(producto.categoriaId) }}</td>
           <td data-label="Acciones">
             <button mat-button color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>

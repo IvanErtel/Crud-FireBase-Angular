@@ -8,4 +8,6 @@ export interface Producto {
   precioVenta?: number;
   proveedorId: string;
   userId?: string;
+  mostrarDescripcion?: boolean; 
+  mostrarDetalles?: boolean; 
   }

@@ -64,6 +64,25 @@ button {
 
 /* Estilos para hacerlo responsivo */
 @media (max-width: 768px) {
+
+  th[data-label="Acciones"] {
+    display: none;
+  }
+  td[data-label="Acciones"] {
+    display: flex;
+    flex-direction: column;
+  }
+  .productos-table td {
+    display: block;
+    text-align: left;
+  }
+  .productos-table tr {
+    border-bottom: 1px solid #ddd;
+  }
+  .productos-table td[data-label]::before {
+    font-weight: bold;
+  }
+  
   .productos-table {
     display: block;
     width: 100%;
@@ -93,5 +112,10 @@ button {
     font-weight: bold;
     text-transform: uppercase;
     margin-right: 10px;
+  }
+
+  /* Nueva regla para separar los botones en móvil */
+  .left-panel button {
+    margin-bottom: 10px; /* Añadir espacio entre los botones */
   }
 }
