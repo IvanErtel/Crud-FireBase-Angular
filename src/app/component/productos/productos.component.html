@@ -130,23 +130,29 @@
           <td data-label="Precio de Compra">{{ producto.precioCompra | currency }}</td>
           <td data-label="Precio de Venta">{{ producto.precioVenta | currency }}</td>
           <td data-label="Cantidad">{{ producto.cantidad }}</td>
-          <td data-label="Descripción" (click)="producto.mostrarDetalles = !producto.mostrarDetalles">
-            <span *ngIf="!producto.mostrarDetalles">
-              {{ producto.descripcion | slice: 0: 50 }}<span *ngIf="producto.descripcion.length > 50">...</span>
+          <td data-label="Descripción">
+            <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
+              {{ producto.descripcion | slice: 0: 50 }}...
+              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
             </span>
-            <span *ngIf="producto.mostrarDetalles">{{ producto.descripcion }}</span>
-            <a href="#" *ngIf="producto.descripcion.length > 50">{{ producto.mostrarDetalles ? 'Ver Menos' : 'Ver Más' }}</a>
+            <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
+              {{ producto.descripcion }}
+              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
+            </span>
+            <span *ngIf="producto.descripcion.length <= 50">
+              {{ producto.descripcion }}
+            </span>
           </td>
           <td data-label="Categoría">
             {{ getCategoriaNombre(producto.categoriaId) | async }}
-          </td>        
+          </td>
           <td data-label="Acciones">
             <button mat-button color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
             <button mat-button (click)="editarProducto(producto)">Editar</button>
             <button mat-button (click)="abrirDialogoActualizarCantidad(producto)">Act. Cantidad</button>
           </td>
         </tr>
-      </tbody>
+      </tbody>        
     </table>
   </div>
 </div>
