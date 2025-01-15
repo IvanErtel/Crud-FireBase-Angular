@@ -65,6 +65,12 @@ button {
 /* Estilos para hacerlo responsivo */
 @media (max-width: 768px) {
 
+  .container {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
   th[data-label="Acciones"] {
     display: none;
   }
@@ -118,4 +124,5 @@ button {
   .left-panel button {
     margin-bottom: 10px; /* Añadir espacio entre los botones */
   }
+  
 }

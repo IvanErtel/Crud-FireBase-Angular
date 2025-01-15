@@ -1,4 +1,3 @@
-
 <div class="container">
   <div class="left-panel">
     <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()" class="cliente-form">
@@ -21,35 +20,22 @@
     </form>
   </div>
 
-<!-- clientes.component.html -->
-<div class="right-panel">
-  <h2>Lista de Clientes</h2>
-  <div *ngIf="clientes$ | async as clientes; else loading">
-    <table class="mat-elevation-z8 full-width">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Email</th>
-          <th>Teléfono</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let cliente of clientes">
-          <td>{{ cliente.nombre }}</td>
-          <td>{{ cliente.email }}</td>
-          <td>{{ cliente.telefono }}</td>
-          <td>
-            <button mat-button color="warn" (click)="deleteCliente(cliente.id)">Eliminar</button>
-            <button mat-button (click)="editCliente(cliente)">Editar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="right-panel">
+    <h2>Lista de Clientes</h2>
+    <div *ngIf="clientes$ | async as clientes; else loading">
+      <!-- Muestra clientes como tarjetas en vez de tabla -->
+      <div *ngFor="let cliente of clientes" class="cliente-card">
+        <h3>{{ cliente.nombre }}</h3>
+        <p>Email: {{ cliente.email }}</p>
+        <p>Teléfono: {{ cliente.telefono }}</p>
+        <div class="actions">
+          <button mat-button color="warn" (click)="deleteCliente(cliente.id)">Eliminar</button>
+          <button mat-button (click)="editCliente(cliente)">Editar</button>
+        </div>
+      </div>
+    </div>
+    <ng-template #loading>
+      Cargando clientes...
+    </ng-template>
   </div>
-  <ng-template #loading>
-    Cargando clientes...
-  </ng-template>
 </div>
-</div>
-

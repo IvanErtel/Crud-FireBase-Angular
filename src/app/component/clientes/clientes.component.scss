@@ -1,3 +1,4 @@
+/* Estilo general */
 .container {
   display: flex;
   flex-wrap: wrap; /* Permite que los paneles se ajusten en pantallas más pequeñas */
@@ -13,6 +14,7 @@
   background-color: #fff; /* Fondo blanco para los paneles */
 }
 
+/* Formulario de clientes */
 .cliente-form {
   display: flex;
   flex-direction: column;
@@ -30,6 +32,7 @@ mat-form-field {
 table {
   border-collapse: collapse; /* Colapsa los bordes de la tabla para un look más limpio */
   margin-top: 20px; /* Espacio antes de la tabla */
+  width: 100%; /* Asegura que la tabla ocupe el 100% del ancho disponible */
 }
 
 th, td {
@@ -57,13 +60,57 @@ button[color="warn"] {
   color: #f44336;
 }
 
-/* Ajustes para pantallas pequeñas */
+/* Estilos responsivos para pantallas pequeñas (max-width: 768px) */
 @media (max-width: 768px) {
   .container {
     flex-direction: column; /* Coloca los paneles uno encima del otro en pantallas pequeñas */
+    margin: 10px; /* Reduce el margen para aprovechar mejor el espacio */
   }
 
   .left-panel, .right-panel {
-    width: 100%; /* Hace que los paneles usen todo el ancho disponible */
+    width: 100%; /* Los paneles ocupan todo el ancho disponible */
+  }
+
+  /* Estilo de la tabla de clientes */
+  table {
+    display: none; /* Ocultar la tabla en pantallas pequeñas */
+  }
+
+  /* Estilo en lugar de la tabla para pantallas pequeñas */
+  .cliente-card {
+    display: block; /* Mostrar la tarjeta para cada cliente */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background-color: #f9f9f9;
+  }
+
+  .cliente-card h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #333;
+  }
+
+  .cliente-card p {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+
+  .cliente-card button {
+    width: 100%; /* Los botones ocupan el 100% del ancho */
+    margin-top: 10px;
+  }
+
+  /* Muestra los clientes como tarjetas en vez de tabla */
+  .right-panel .cliente-card-container {
+    display: block;
+  }
+
+  /* Ajuste de la disposición de los botones */
+  .right-panel button {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 100%; /* Asegura que los botones se ajusten en el móvil */
   }
 }
