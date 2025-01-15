@@ -1,7 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #sidenav mode="side" [opened]="isSidenavOpen" class="sidenav">
     <mat-nav-list>
-      <a mat-list-item routerLink="">Login</a>
+      <a mat-list-item routerLink="login">Login</a>
       <a mat-list-item routerLink="clientes">Clientes</a>
       <a mat-list-item routerLink="productos">Productos</a>
       <!-- <a mat-list-item routerLink="proveedor">Proveedores</a> -->
@@ -12,7 +12,7 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-      <button mat-icon-button (click)="isSidenavOpen = !isSidenavOpen">
+      <button mat-icon-button (click)="toggleSidenav()">
         <mat-icon>menu</mat-icon>
       </button>
       <span>Frama Cosmetic</span>

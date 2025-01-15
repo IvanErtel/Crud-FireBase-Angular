@@ -27,14 +27,19 @@ export class NavbarComponent implements OnInit {
   isLoggedIn: boolean = false;
   email: string = '';
   isSidenavOpen: boolean = false;  // Controla el estado del sidenav
+  previousUrl: string = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Cerrar el sidenav cuando la ruta cambie
+    // Cerrar el sidenav cuando la ruta cambie, pero solo si la ruta actual es diferente de la previa
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        this.isSidenavOpen = false;  // Cierra el sidenav después de un cambio de ruta
+        // Solo cerrar si la ruta ha cambiado
+        if (this.previousUrl !== event.urlAfterRedirects) {
+          this.isSidenavOpen = false;
+        }
+        this.previousUrl = event.urlAfterRedirects;
       }
     });
   }
@@ -44,5 +49,9 @@ export class NavbarComponent implements OnInit {
       this.isLoggedIn = false;
       this.router.navigate(['/login']);
     });
+  }
+
+  toggleSidenav() {
+    this.isSidenavOpen = !this.isSidenavOpen;  // Al pulsar, se alterna entre abrir y cerrar el sidenav
   }
 }

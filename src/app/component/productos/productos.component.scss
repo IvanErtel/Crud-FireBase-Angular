@@ -121,8 +121,17 @@ button {
   }
 
   /* Nueva regla para separar los botones en móvil */
-  .left-panel button {
-    margin-bottom: 10px; /* Añadir espacio entre los botones */
+  .left-panel {
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Asegura que los botones se apilen verticalmente */
+    gap: 10px; /* Espaciado vertical entre botones */
   }
   
+  .left-panel button {
+    width: 80%; /* Ajustar ancho de los botones */
+    margin: 10px auto; /* Centrar horizontalmente y añadir espacio vertical */
+    padding: 5px 10px; /* Ajustar el tamaño del botón */
+  }
+
 }
