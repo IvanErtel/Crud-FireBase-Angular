@@ -48,6 +48,11 @@
           </select>
         </mat-form-field>
 
+        <div class="form-group">
+          <mat-label>Imagen</mat-label>
+          <input type="file" (change)="onFileSelected($event)" />
+        </div>
+        
         <div class="form-buttons">
           <button mat-raised-button color="primary" type="submit">
             {{ editingProductoId ? 'Actualizar Producto' : 'Guardar Producto' }}
@@ -112,47 +117,41 @@
       </mat-select>
     </mat-form-field>
     
-    <table class="productos-table">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Precio de Compra</th>
-          <th>Precio de Venta</th>
-          <th>Cantidad</th>
-          <th>Descripción</th>
-          <th>Categoría</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let producto of productosFiltrados$ | async">
-          <td data-label="Nombre">{{ producto.nombre }}</td>
-          <td data-label="Precio de Compra">{{ producto.precioCompra | currency }}</td>
-          <td data-label="Precio de Venta">{{ producto.precioVenta | currency }}</td>
-          <td data-label="Cantidad">{{ producto.cantidad }}</td>
-          <td data-label="Descripción">
-            <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
-              {{ producto.descripcion | slice: 0: 50 }}...
-              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
-            </span>
-            <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
-              {{ producto.descripcion }}
-              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
-            </span>
-            <span *ngIf="producto.descripcion.length <= 50">
-              {{ producto.descripcion }}
-            </span>
-          </td>
-          <td data-label="Categoría">
-            {{ getCategoriaNombre(producto.categoriaId) | async }}
-          </td>
-          <td data-label="Acciones">
-            <button mat-button color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
-            <button mat-button (click)="editarProducto(producto)">Editar</button>
-            <button mat-button (click)="abrirDialogoActualizarCantidad(producto)">Act. Cantidad</button>
-          </td>
-        </tr>
-      </tbody>        
-    </table>
+    <!-- Lista de productos -->
+<div class="productos-list">
+  <div *ngFor="let producto of productosFiltrados$ | async" class="producto-item">
+    <div class="producto-imagen">
+      <!-- Usa un placeholder o una imagen del producto -->
+      <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{producto.nombre}}" width="100" />    </div>
+    <div class="producto-detalles">
+      <h3>{{ producto.nombre }}</h3>
+      <p class="descripcion">
+        <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
+          {{ producto.descripcion | slice: 0:50 }}...
+          <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
+        </span>
+        <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
+          {{ producto.descripcion }}
+          <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
+        </span>
+        <span *ngIf="producto.descripcion.length <= 50">
+          {{ producto.descripcion }}
+        </span>
+      </p>
+      <p class="precios">
+        Compra: {{ producto.precioCompra | currency }}<br />
+        Venta: {{ producto.precioVenta | currency }}
+      </p>
+      <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menuAcciones="matMenu">
+        <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">Actualizar Cantidad</button>
+        <button mat-menu-item (click)="editarProducto(producto)">Editar</button>
+        <button mat-menu-item color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
+      </mat-menu>
+    </div>
+  </div>
+</div>
   </div>
 </div>

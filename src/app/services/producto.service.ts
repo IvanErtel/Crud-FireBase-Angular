@@ -5,6 +5,7 @@ import { map, switchMap, take } from 'rxjs/operators';
 import { Producto } from '../interfaces/producto.interface';
 import { AuthService } from './auth.service'; // Servicio para obtener el userId actual
 import { CategoriaService } from './categoria.service';
+import { Storage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage'; 
 
 @Injectable({
     providedIn: 'root',
@@ -18,7 +19,8 @@ import { CategoriaService } from './categoria.service';
     constructor(
       private firestore: Firestore,
       private authService: AuthService,
-      private categoriaService: CategoriaService
+      private categoriaService: CategoriaService,
+      private storage: Storage
     ) {
       this.cargarProductos(); // Carga los productos iniciales
       this.cargarCategorias(); // Carga las categorías iniciales
@@ -114,4 +116,34 @@ import { CategoriaService } from './categoria.service';
             })
         );
     }
+
+    agregarProductoConImagen(producto: Producto, imagenArchivo: File): Observable<string> {
+        return this.authService.getUserId().pipe( // Obtener el userId
+          switchMap(userId => {
+            if (!userId) {
+              throw new Error('Usuario no autenticado'); // Si no hay usuario autenticado, lanzar error
+            }
+    
+            // Subir la imagen a Firebase Storage
+            const imagenRef = ref(this.storage, `productos/${userId}/${imagenArchivo.name}`);
+            const metadata = { customMetadata: { userId: userId } };
+    
+            return from(uploadBytes(imagenRef, imagenArchivo, metadata)).pipe(
+              // Una vez subida la imagen, obtener la URL de la imagen subida
+              switchMap(() => getDownloadURL(imagenRef)),
+              switchMap(urlImagen => {
+                // Crear el producto con la URL de la imagen
+                const productoConImagen = { ...producto, userId, imagenUrl: urlImagen };
+    
+                // Referencia a la colección de productos en Firestore
+                const productosRef = collection(this.firestore, 'productos');
+                return from(addDoc(productosRef, productoConImagen)).pipe(
+                  // Retornar el ID del producto agregado a Firestore
+                  map(docRef => docRef.id)
+                );
+              })
+            );
+          })
+        );
+      }
 }

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../interfaces/producto.interface';
 import { NavbarComponent } from '../navbar/navbar.component';
-import { BehaviorSubject, Observable, Subject, switchMap, take } from 'rxjs';
+import { BehaviorSubject, from, Observable, Subject, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,6 +16,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DialogoGenericoComponent } from '../dialog/dialogo-generico.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { map } from 'rxjs/operators';
+import { MatMenuModule } from '@angular/material/menu';
+import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
+import { AuthService } from '../../services/auth.service';
+import { addDoc, collection } from 'firebase/firestore';
 
 
 @Component({
@@ -23,7 +27,8 @@ import { map } from 'rxjs/operators';
   standalone: true,
   imports: [NavbarComponent, ReactiveFormsModule, MatInputModule,
     MatButtonModule, MatSelectModule, MatIconModule,
-    CommonModule, MatDialogModule, ActualizarCantidadProductoComponent],
+    CommonModule, MatMenuModule,
+     MatDialogModule, ActualizarCantidadProductoComponent],
   templateUrl: './productos.component.html',
   styleUrls: ['./productos.component.scss'],
 })
@@ -38,12 +43,14 @@ export class ProductosComponent implements OnInit {
   categoriaForm: FormGroup;
   categoriasMap = new Map<string, string>();
   categoriaSeleccionada: string | null = null;
+  imagenArchivo: File | null = null;
   private unsubscribe$ = new Subject<void>();
   private filtroSubject = new BehaviorSubject<string>('');
+  private storage = getStorage();
 
   constructor(private fb: FormBuilder, private productoService: ProductoService, 
     private categoriaService: CategoriaService, public dialog: MatDialog,
-    private snackBar: MatSnackBar) {
+    private snackBar: MatSnackBar, private authService: AuthService) {
 this.categoriaForm = this.fb.group({
 nombre: ['', Validators.required],
 });
@@ -55,6 +62,7 @@ precioVenta: ['', [Validators.required, Validators.min(0)]],
 cantidad: ['', [Validators.required, Validators.min(1)]],
 descripcion: ['', Validators.required],
 categoriaId: ['',],
+imagenUrl: [null],
 });
 
     // Formulario de categoría
@@ -120,7 +128,55 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       });
     }
   }
+  
+  subirImagen(imagen: File): Observable<string> {
+    return this.authService.getUserId().pipe(
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('Usuario no autenticado');
+        }
+  
+        const filePath = `productos/${Date.now()}_${imagen.name}`;
+        const storageRef = ref(this.storage, filePath);
+  
+        // Subir archivo con metadatos
+        const metadata = {
+          customMetadata: {
+            userId: userId,  // Guardamos el userId en los metadatos
+          }
+        };
+  
+        return from(uploadBytes(storageRef, imagen, metadata)).pipe(
+          switchMap(snapshot => getDownloadURL(snapshot.ref))
+        );
+      })
+    );
+  }  
 
+  agregarProductoConImagen(): void {
+    if (this.productoForm.valid && this.imagenArchivo) {
+      const producto: Producto = this.productoForm.value; // Obtener los valores del formulario
+
+      // Llamar al servicio para agregar el producto
+      this.productoService.agregarProductoConImagen(producto, this.imagenArchivo).subscribe(
+        (id) => {
+          console.log('Producto agregado con ID:', id);
+          this.snackBar.open('Producto agregado con éxito', 'Cerrar', { duration: 3000 });
+        },
+        (error) => {
+          console.error('Error al agregar el producto:', error);
+          this.snackBar.open('Error al agregar el producto', 'Cerrar', { duration: 3000 });
+        }
+      );
+    } else {
+      this.snackBar.open('Formulario no válido o imagen no seleccionada', 'Cerrar', { duration: 3000 });
+    }
+  }
+  
+  onFileSelected(event: any): void {
+    this.imagenArchivo = event.target.files[0]; // Capturamos la imagen seleccionada
+  }
+  
   // Método para eliminar una categoría
 eliminarCategoria(id: string): void {
   const dialogRef = this.dialog.open(DialogoGenericoComponent, {
@@ -160,6 +216,7 @@ eliminarCategoria(id: string): void {
     this.mostrarFormularioCategoria = false;
   }
   
+  
   cargarCategorias(): void {
     this.categoriaService.obtenerCategorias().pipe(take(1)).subscribe(categorias => {
       this.categoriasMap.clear(); // Limpiamos el mapa antes de recargar las categorías
@@ -180,51 +237,145 @@ eliminarCategoria(id: string): void {
 
   onSubmit(): void {
     if (this.productoForm.valid) {
-      const producto = this.productoForm.value;
+      const producto: Producto = {
+        nombre: this.productoForm.value.nombre,
+        precioCompra: this.productoForm.value.precioCompra,
+        precioVenta: this.productoForm.value.precioVenta,
+        cantidad: this.productoForm.value.cantidad,
+        descripcion: this.productoForm.value.descripcion,
+        categoriaId: this.productoForm.value.categoriaId,
+        imagenUrl: '' // Se actualizará si se carga una imagen
+      };
   
       if (this.editingProductoId) {
-        this.productoService.actualizarProducto(this.editingProductoId, producto).subscribe(() => {
-          console.log('Producto actualizado');
-          this.resetFormAndEditingState();
-          this.cargarProductos();
-        });
+        // Actualización del producto
+        if (this.imagenArchivo) {
+          // Si se selecciona una nueva imagen, la subimos primero
+          this.productoService.agregarProductoConImagen(producto, this.imagenArchivo).subscribe({
+            next: (idProducto: string) => {
+              console.log('Producto actualizado con nueva imagen.');
+              // Mostrar mensaje de éxito
+              this.snackBar.open('Producto actualizado con éxito', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-exito']
+              });
+              this.resetFormAndEditingState();
+              this.cargarProductos();
+            },
+            error: (err: any) => {
+              console.error('Error al actualizar producto con nueva imagen:', err);
+              this.snackBar.open('Error al actualizar producto con nueva imagen', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        } else {
+          this.productoService.actualizarProducto(this.editingProductoId, producto).subscribe({
+            next: () => {
+              console.log('Producto actualizado');
+              // Mostrar mensaje de éxito
+              this.snackBar.open('Producto actualizado con éxito', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-exito']
+              });
+              this.resetFormAndEditingState();
+              this.cargarProductos();
+              this.mostrarFormulario = false;
+            },
+            error: (err: any) => {
+              console.error('Error al actualizar producto:', err);
+              this.snackBar.open('Error al actualizar producto', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        }
       } else {
-        this.productoService.agregarProducto(producto).subscribe(id => {
-          console.log(`Producto agregado con ID: ${id}`);
-          this.resetFormAndEditingState();
-          this.cargarProductos();
-        });
+        // Creación de un nuevo producto
+        if (this.imagenArchivo) {
+          this.productoService.agregarProductoConImagen(producto, this.imagenArchivo).subscribe({
+            next: (idProducto: string) => {
+              console.log('Producto con imagen agregado con ID:', idProducto);
+              // Mostrar mensaje de éxito
+              this.snackBar.open('Producto creado con éxito', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-exito']
+              });
+              this.resetFormAndEditingState();
+              this.cargarProductos();
+            },
+            error: (err: any) => {
+              console.error('Error al agregar producto con imagen:', err);
+              this.snackBar.open('Error al agregar producto con imagen', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        } else {
+          this.productoService.agregarProducto(producto).subscribe({
+            next: (idProducto: string) => {
+              console.log('Producto agregado sin imagen con ID:', idProducto);
+              // Mostrar mensaje de éxito
+              this.snackBar.open('Producto creado con éxito', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-exito']
+              });
+              this.resetFormAndEditingState();
+              this.cargarProductos();
+            },
+            error: (err: any) => {
+              console.error('Error al agregar producto:', err);
+              this.snackBar.open('Error al agregar producto', 'Cerrar', {
+                duration: 3000,
+                panelClass: ['snackbar-error']
+              });
+            }
+          });
+        }
       }
+    } else {
+      // Mostrar mensaje si el formulario es inválido
+      this.snackBar.open('Por favor, complete todos los campos', 'Cerrar', {
+        duration: 3000,
+        panelClass: ['snackbar-error']
+      });
     }
-  }
+  }  
 
   editarProducto(producto: Producto): void {
     if (producto.id) {
       this.editingProductoId = producto.id;
+      
+      // Aquí nos aseguramos de que los valores del producto se asignen correctamente
+      this.productoForm.setValue({
+        nombre: producto.nombre,
+        precioCompra: producto.precioCompra,
+        precioVenta: producto.precioVenta || 0,
+        cantidad: producto.cantidad,
+        descripcion: producto.descripcion,
+        categoriaId: producto.categoriaId,
+        imagenUrl: producto.imagenUrl || '', // Aseguramos que imagenUrl no sea nulo o indefinido
+      });
+      
     } else {
       console.log('Error: El Producto no tiene ID');
       this.snackBar.open('Error: El Producto no tiene ID', 'Cerrar', {
         duration: 3000,
-        panelClass: ['snackbar-error'] 
+        panelClass: ['snackbar-error']
       });
     }
   
     this.mostrarFormulario = true; // Asegura que el formulario esté visible
-    this.productoForm.setValue({
-      nombre: producto.nombre,
-      precioCompra: producto.precioCompra,
-      precioVenta: producto.precioVenta || 0,
-      cantidad: producto.cantidad,
-      descripcion: producto.descripcion,
-      categoriaId: producto.categoriaId,
-    });
   
     // Desplaza hacia el formulario
     setTimeout(() => {
       const formularioElemento = document.querySelector('.producto-form');
       formularioElemento?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
-  }
+  }  
   
   cancelarFormulario(): void {
     this.productoForm.reset();  // Limpia el formulario

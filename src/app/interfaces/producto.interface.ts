@@ -6,7 +6,8 @@ export interface Producto {
   descripcion: string;
   precioCompra: number;
   precioVenta?: number;
-  proveedorId: string;
+  proveedorId?: string;
+  imagenUrl?: string;
   userId?: string;
   mostrarDescripcion?: boolean; 
   mostrarDetalles?: boolean; 
