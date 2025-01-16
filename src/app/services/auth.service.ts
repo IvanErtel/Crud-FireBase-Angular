@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { from, Observable } from 'rxjs';
+import { from, Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  constructor(private afAuth: AngularFireAuth) {}
+  private unsubscribe$ = new Subject<void>();
+  
+  constructor(private afAuth: AngularFireAuth,) {}
 
   // Iniciar sesión
   login(email: string, password: string): Observable<any> {
@@ -16,7 +18,9 @@ export class AuthService {
 
   // Cerrar sesión
   logout(): Observable<void> {
-    return from(this.afAuth.signOut());
+    this.unsubscribe$.next();  
+    this.unsubscribe$.complete(); 
+    return from(this.afAuth.signOut()); 
   }
 
   // Obtener el estado de autenticación del usuario
@@ -27,7 +31,13 @@ export class AuthService {
   // Obtener el userId (uid) del usuario autenticado
   getUserId(): Observable<string | null> {
     return this.afAuth.authState.pipe(
-      map(user => user ? user.uid : null)
+      map(user => {
+        if (user) {
+          return user.uid;  // Retorna el UID del usuario autenticado
+        } else {
+          throw new Error('Usuario no autenticado');  // Si no hay usuario autenticado, lanza un error
+        }
+      })
     );
   }
 }

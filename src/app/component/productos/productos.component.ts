@@ -178,37 +178,44 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
   }
   
   // Método para eliminar una categoría
-eliminarCategoria(id: string): void {
-  const dialogRef = this.dialog.open(DialogoGenericoComponent, {
-    data: {
-      title: 'Confirmar Eliminación',
-      message: '¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.',
-      confirmText: 'Eliminar',
-      cancelText: 'Cancelar'
-    }
-  });
-
-  dialogRef.afterClosed().subscribe((resultado) => {
-    if (resultado === true) {
-      // Llamamos al servicio para eliminar la categoría
-      this.categoriaService.eliminarCategoria(id).subscribe({
-        next: () => {
-          console.log('Categoría eliminada');
-          this.cargarCategorias(); // Recargamos las categorías después de eliminar
-        },
-        error: (err) => {
-          console.error('Error al eliminar la categoría:', err);
-          this.snackBar.open('Hubo un error al eliminar la categoría. Inténtalo nuevamente.', 'Cerrar', {
-            duration: 3000,
-            panelClass: ['snackbar-error']
-          });
-        }
-      });
-    } else {
-      console.log('Eliminación cancelada');
-    }
-  });
-}
+  eliminarCategoria(id: string): void {
+    // Abrimos el diálogo de confirmación
+    const dialogRef = this.dialog.open(DialogoGenericoComponent, {
+      data: {
+        title: 'Confirmar Eliminación',
+        message: '¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.',
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar'
+      }
+    });
+  
+    // Esperamos la respuesta del diálogo
+    dialogRef.afterClosed().subscribe((resultado) => {
+      if (resultado === true) {
+        // Si se confirma la eliminación, procedemos con la eliminación
+        this.eliminarCategoriaConServicio(id);
+      } else {
+        console.log('Eliminación cancelada');
+      }
+    });
+  }
+  
+  private eliminarCategoriaConServicio(id: string): void {
+    // Llamamos al servicio para eliminar la categoría
+    this.categoriaService.eliminarCategoria(id).subscribe({
+      next: () => {
+        console.log('Categoría eliminada');
+        this.cargarCategorias(); // Recargamos las categorías después de eliminar
+      },
+      error: (err) => {
+        console.error('Error al eliminar la categoría:', err);
+        this.snackBar.open('Hubo un error al eliminar la categoría. Inténtalo nuevamente.', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }  
 
   // Método para cancelar la creación de una categoría
   cancelarFormularioCategoria(): void {
