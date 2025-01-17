@@ -1,14 +1,14 @@
 <div class="container">
-  <div class="left-panel">
+  <div class="botones-superiores">
     <!-- Botón para cargar un nuevo producto -->
     <button mat-raised-button color="accent" (click)="toggleFormulario()">
       {{ mostrarFormulario ? 'Cerrar' : 'Cargar Nuevo Producto' }}
     </button>
-
     <!-- Botón para cargar una nueva categoría -->
     <button mat-raised-button color="accent" (click)="toggleFormularioCategoria()">
       {{ mostrarFormularioCategoria ? 'Cerrar' : 'Cargar Nueva Categoría' }}
     </button>
+  </div>
 
     <!-- Formulario para cargar un nuevo producto -->
     <div *ngIf="mostrarFormulario">
@@ -100,13 +100,11 @@
 
   <div class="productos-container">
     <h2>Lista de Productos</h2>
-    
-    <!-- Campo de búsqueda --> 
-    <mat-form-field appearance="fill"> 
-      <mat-label>Buscar Producto</mat-label> 
+    <mat-form-field appearance="fill">
+      <mat-label>Buscar Producto</mat-label>
       <input matInput (input)="filtrarProductos($event)" placeholder="Buscar producto por nombre">
     </mat-form-field>
-    
+  
     <mat-form-field appearance="fill">
       <mat-label>Filtrar por Categoría</mat-label>
       <mat-select (selectionChange)="filtrarProductosPorCategoria($event)">
@@ -116,42 +114,53 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    
-    <!-- Lista de productos -->
-<div class="productos-list">
-  <div *ngFor="let producto of productosFiltrados$ | async" class="producto-item">
-    <div class="producto-imagen">
-      <!-- Usa un placeholder o una imagen del producto -->
-      <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{producto.nombre}}" width="100" />    </div>
-    <div class="producto-detalles">
-      <h3>{{ producto.nombre }}</h3>
-      <p class="descripcion">
-        <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
-          {{ producto.descripcion | slice: 0:50 }}...
-          <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
-        </span>
-        <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
-          {{ producto.descripcion }}
-          <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
-        </span>
-        <span *ngIf="producto.descripcion.length <= 50">
-          {{ producto.descripcion }}
-        </span>
-      </p>
-      <p class="precios">
-        Compra: {{ producto.precioCompra | currency }}<br />
-        Venta: {{ producto.precioVenta | currency }}
-      </p>
-      <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #menuAcciones="matMenu">
-        <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">Actualizar Cantidad</button>
-        <button mat-menu-item (click)="editarProducto(producto)">Editar</button>
-        <button mat-menu-item color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
-      </mat-menu>
-    </div>
-  </div>
-</div>
-  </div>
-</div>
+  
+    <!-- Grilla de productos con tabla -->
+    <table class="productos-grid-table">
+      <thead>
+        <tr>
+          <th>Imagen</th>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Descripción</th>
+          <th>Precios</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let producto of productosFiltrados$ | async">
+          <td>
+            <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}" width="100">
+          </td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ obtenerNombreCategoria(producto.categoriaId) }}</td>
+          <td>
+            <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
+              {{ producto.descripcion | slice: 0:50 }}...
+              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
+            </span>
+            <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
+              {{ producto.descripcion }}
+              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
+            </span>
+            <span *ngIf="producto.descripcion.length <= 50">{{ producto.descripcion }}</span>
+          </td>
+          <td>
+            Compra: {{ producto.precioCompra | currency }}<br />
+            Venta: {{ producto.precioVenta | currency }}
+          </td>
+          <td>
+            <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menuAcciones="matMenu">
+              <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">Actualizar Cantidad</button>
+              <button mat-menu-item (click)="editarProducto(producto)">Editar</button>
+              <button mat-menu-item color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
+            </mat-menu>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div> 
+  

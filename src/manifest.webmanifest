@@ -1,6 +1,6 @@
 {
-  "name": "Mi Inventario",
-  "short_name": "MI",
+  "name": "Sistock",
+  "short_name": "Sistock",
   "theme_color": "#1976d2",
   "background_color": "#fafafa",
   "display": "standalone",

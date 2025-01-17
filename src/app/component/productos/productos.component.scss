@@ -1,30 +1,83 @@
-.productos-list {
+.container {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  justify-content: center;
+  padding: 1rem;
 }
 
-.producto-item {
+.productos-container {
+  padding: 1rem;
+  max-width: 90%;
+}
+
+.producto-card {
   display: flex;
   align-items: center;
-  padding: 10px;
-  background: #f5f5f5;
+  padding: 1rem;
+  border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.producto-imagen img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 15px;
+.productos-grid-table {
+  width: 100%; /* Hace que la tabla ocupe todo el ancho del contenedor */
+  border-collapse: collapse;
 }
 
+.productos-grid-table th,
+.productos-grid-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.productos-grid-table tr {
+  transition: background-color 0.3s ease;
+}
+
+.productos-grid-table tr:hover {
+  background-color: #f5f5f5; /* Efecto de resaltado */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra leve en el hover */
+}
+
+.botones-superiores{
+  display: flex;
+  justify-content: center;
+  gap: 1rem; 
+  margin-bottom: 1rem;
+}
+
+.producto-contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.producto-acciones {
+  margin-left: auto;
+}
+
+.productos-grid-table img {
+  width: 100%;
+  max-width: 100px;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+/* Ajuste responsivo para la imagen */
+@media (max-width: 768px) {
+  .producto-imagen img {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+/* Detalles del producto */
 .producto-detalles {
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
 
 .producto-detalles h3 {
@@ -36,14 +89,23 @@
   margin: 5px 0;
 }
 
+/* Precios del producto */
 .precios {
   font-weight: bold;
+}
+
+/* Botones de acción */
+.producto-acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .mat-icon-button {
   align-self: flex-start;
 }
 
+/* Estilo para Snackbar */
 .snackbar-exito {
   background-color: #4caf50;
 }
@@ -52,13 +114,23 @@
   background-color: #f44336; 
 }
 
+/* Cambios responsivos para móviles */
 @media (max-width: 768px) {
-  .producto-imagen img {
-    width: 70px;
-    height: 70px;
+  .producto-item {
+    flex-direction: row;
+    align-items: center;
   }
-  
+
   .producto-detalles {
     font-size: 14px;
   }
+
+  .descripcion {
+    display: none; /* Ocultar descripción en pantallas pequeñas */
+  }
+}
+
+/* Opcional: Mejoras visuales */
+.producto-item:active {
+  transform: scale(0.98);
 }

@@ -232,7 +232,11 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       });
     });
   }
-
+  
+  obtenerNombreCategoria(categoriaId: string): string {
+    return this.categoriasMap.get(categoriaId) || 'Sin categoría';
+  }
+  
   cargarProductos(): void {
     this.productos$ = this.productoService.obtenerProductos();
   }
