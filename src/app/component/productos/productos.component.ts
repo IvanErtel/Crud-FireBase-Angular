@@ -79,12 +79,14 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
   switchMap(filtro => 
     this.productoService.obtenerProductos().pipe(
       map((productos: Producto[]) => 
-        productos.filter((producto: Producto) => 
-          producto.nombre.toLowerCase().includes(filtro.toLowerCase())
+        productos
+          .filter((producto: Producto) => 
+            producto.nombre.toLowerCase().includes(filtro.toLowerCase())
+          )
+          .map(producto => ({ ...producto, mostrarDetalles: false })) // Agrega la propiedad a cada producto
+      )
+    )
   )
-)
-)
-)
 );
 }
 
@@ -490,11 +492,15 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
           );
         }
   
+        // Agrega la propiedad mostrarDetalles a cada producto
+        productosFiltrados = productosFiltrados.map(producto => ({ ...producto, mostrarDetalles: false }));
+  
         observer.next(productosFiltrados);
         observer.complete();
       });
     });
   }
+  
   
   filtrarProductos(event: Event): void {
     const input = event.target as HTMLInputElement;

@@ -134,7 +134,7 @@
           </td>
           <td>{{ producto.nombre }}</td>
           <td>{{ obtenerNombreCategoria(producto.categoriaId) }}</td>
-          <td>
+          <td [class.mostrar]="producto.mostrarDetalles" class="descripcion">
             <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
               {{ producto.descripcion | slice: 0:50 }}...
               <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
@@ -149,7 +149,7 @@
             Compra: {{ producto.precioCompra | currency }}<br />
             Venta: {{ producto.precioVenta | currency }}
           </td>
-          <td>
+          <td class="producto-acciones">
             <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
               <mat-icon>more_vert</mat-icon>
             </button>
@@ -160,6 +160,7 @@
             </mat-menu>
           </td>
         </tr>
+        
       </tbody>
     </table>
   </div> 

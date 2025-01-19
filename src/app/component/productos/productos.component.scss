@@ -64,14 +64,11 @@
   border: 1px solid #ddd;
 }
 
-/* Ajuste responsivo para la imagen */
-@media (max-width: 768px) {
-  .producto-imagen img {
-    width: 70px;
-    height: 70px;
-  }
+td.descripcion {
+  max-width: 300px; /* Ajusta según tu preferencia */
+  word-wrap: break-word; /* Permite que el texto se ajuste dentro de la celda */
+  white-space: normal; /* Permite que las líneas de texto se ajusten automáticamente */
 }
-
 /* Detalles del producto */
 .producto-detalles {
   flex-grow: 1;
@@ -94,13 +91,6 @@
   font-weight: bold;
 }
 
-/* Botones de acción */
-.producto-acciones {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
 .mat-icon-button {
   align-self: flex-start;
 }
@@ -114,23 +104,44 @@
   background-color: #f44336; 
 }
 
-/* Cambios responsivos para móviles */
-@media (max-width: 768px) {
-  .producto-item {
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .producto-detalles {
-    font-size: 14px;
-  }
-
-  .descripcion {
-    display: none; /* Ocultar descripción en pantallas pequeñas */
-  }
-}
-
 /* Opcional: Mejoras visuales */
 .producto-item:active {
   transform: scale(0.98);
 }
+
+/* Cambios responsivos para móviles */
+@media (max-width: 768px) {
+  .productos-container {
+    max-width: 100%;
+  }
+  
+  .productos-grid-table {
+    width: 100%; /* Asegurar que la tabla ocupa todo el ancho */
+  }
+
+  .productos-grid-table thead {
+    display: none; /* Ocultar encabezados de columnas en móvil */
+  }
+
+  .productos-grid-table td {
+    vertical-align: middle; /* Alinear contenido verticalmente */
+    padding: 5px;
+  }
+
+  .productos-grid-table td:nth-child(3) {
+    display: none; /* Ocultar columna de Categoría */
+  }
+
+  .productos-grid-table td:last-child {
+    text-align: right; /* Alinear los tres puntos a la derecha */
+  }
+
+  .productos-grid-table img {
+    display: block;
+    width: 170px;
+    height: auto;
+  }
+}
+
+
+
