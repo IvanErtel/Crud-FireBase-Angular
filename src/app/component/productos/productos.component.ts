@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../interfaces/producto.interface';
-import { NavbarComponent } from '../navbar/navbar.component';
 import { BehaviorSubject, from, Observable, Subject, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -25,7 +24,7 @@ import { addDoc, collection } from 'firebase/firestore';
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [NavbarComponent, ReactiveFormsModule, MatInputModule,
+  imports: [ ReactiveFormsModule, MatInputModule,
     MatButtonModule, MatSelectModule, MatIconModule,
     CommonModule, MatMenuModule,
      MatDialogModule, ActualizarCantidadProductoComponent],

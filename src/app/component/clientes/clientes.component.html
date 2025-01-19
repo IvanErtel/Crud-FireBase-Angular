@@ -22,7 +22,13 @@
 
   <div class="right-panel">
     <h2>Lista de Clientes</h2>
-    <div *ngIf="clientes$ | async as clientes; else loading">
+      <!-- Buscador de clientes -->
+      <mat-form-field appearance="fill">
+        <mat-label>Buscar Cliente</mat-label>
+        <input matInput placeholder="Buscar cliente" (input)="actualizarFiltro($event)" />
+      </mat-form-field>
+
+    <div *ngIf="clientesFiltrados$ | async as clientes; else loading">
       <!-- Muestra clientes como tarjetas en vez de tabla -->
       <div *ngFor="let cliente of clientes" class="cliente-card">
         <h3>{{ cliente.nombre }}</h3>

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, of, takeUntil } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 import { FirebaseService } from '../../services/firebaseService.service';
 import { Cliente } from '../../interfaces/cliente.interface';
 import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
@@ -17,7 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   selector: 'app-clientes',
   standalone: true,
   imports: [
-    RouterOutlet,RouterLink,RouterModule,NavbarComponent,
+    RouterOutlet, RouterLink, RouterModule, NavbarComponent,
     ReactiveFormsModule, 
     CommonModule,
     MatFormFieldModule,
@@ -29,35 +30,55 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
 })
-export class ClientesComponent implements OnInit{
+export class ClientesComponent implements OnInit, OnDestroy {
   clientes$: BehaviorSubject<Cliente[]> = new BehaviorSubject<Cliente[]>([]);
+  clientesFiltrados$!: Observable<Cliente[]>;
+  filtro: BehaviorSubject<string> = new BehaviorSubject<string>('');
+
   clienteForm: FormGroup;
   editingClienteId: string | null = null;
   private unsubscribe$ = new Subject<void>();
 
-  constructor(private firebaseService: FirebaseService, 
+  constructor(
+    private firebaseService: FirebaseService, 
     private fb: FormBuilder,
-    private snackBar: MatSnackBar){
+    private snackBar: MatSnackBar
+  ) {
     this.clienteForm = this.fb.group({
       nombre: ['', Validators.required],
-      email: ['', [ Validators.email]],
+      email: ['', [Validators.email]],
       telefono: ['', Validators.required],
-    })
+    });
   }
 
   ngOnInit(): void {
     this.loadClientes();
+    this.clientesFiltrados$ = combineLatest([
+      this.clientes$,
+      this.filtro.asObservable()
+    ]).pipe(
+      map(([clientes, filtro]) => 
+        clientes.filter(cliente => 
+          cliente.nombre.toLowerCase().includes(filtro.toLowerCase())
+        )
+      )
+    );
   }
 
   loadClientes(): void {
     this.firebaseService.getClientes().pipe(takeUntil(this.unsubscribe$)).subscribe(clientes => {
-      this.clientes$.next(clientes); // Asigna los datos directamente al BehaviorSubject.
+      this.clientes$.next(clientes);
     });
   }
 
+  actualizarFiltro(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.filtro.next(input.value);
+  }
+
   ngOnDestroy(): void {
-    this.unsubscribe$.next(); // Señala que se va a desuscribir
-    this.unsubscribe$.complete(); // Completa el Subject para prevenir fugas de memoria
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
   }
 
   onSubmit(): void {
@@ -67,7 +88,7 @@ export class ClientesComponent implements OnInit{
         this.firebaseService.updateCliente(this.editingClienteId, clienteData).subscribe({
           next: () => {
             this.snackBar.open('Cliente actualizado con éxito', 'Cerrar', { duration: 3000 });
-            this.loadClientes();  // Esto garantiza la recarga.
+            this.loadClientes();
             this.resetFormAndEditingState();
           },
           error: (error) => console.error(error),
@@ -76,18 +97,18 @@ export class ClientesComponent implements OnInit{
         this.firebaseService.addCliente(clienteData).subscribe({
           next: () => {
             this.snackBar.open('Nuevo cliente cargado con éxito', 'Cerrar', { duration: 3000 });
-            this.loadClientes();  // Recarga la lista después de agregar.
+            this.loadClientes();
             this.resetFormAndEditingState();
           },
           error: (error) => console.error(error),
         });
       }
     }
-  }  
-  
+  }
+
   resetFormAndEditingState(): void {
     this.clienteForm.reset();
-    this.editingClienteId = null; // Restablece el ID de edición
+    this.editingClienteId = null;
   }
 
   editCliente(cliente: Cliente): void {
@@ -98,7 +119,7 @@ export class ClientesComponent implements OnInit{
       telefono: cliente.telefono,
     });
   }
-  
+
   deleteCliente(clienteId: string): void {
     this.firebaseService.deleteCliente(clienteId).subscribe({
       next: () => {
@@ -111,6 +132,6 @@ export class ClientesComponent implements OnInit{
 
   resetForm(): void {
     this.clienteForm.reset();
-    this.editingClienteId = null; // Restablece el estado de edición
+    this.editingClienteId = null;
   }
 }
