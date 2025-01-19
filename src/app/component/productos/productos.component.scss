@@ -1,12 +1,21 @@
 .container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   padding: 1rem;
 }
 
 .productos-container {
   padding: 1rem;
-  max-width: 90%;
+  max-width: 100%;
+}
+
+.producto-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px; /* Ajusta el ancho máximo del formulario */
+  margin: 0 auto;
 }
 
 .producto-card {
@@ -114,9 +123,19 @@ td.descripcion {
   .productos-container {
     max-width: 100%;
   }
-  
+
   .productos-grid-table {
     width: 100%; /* Asegurar que la tabla ocupa todo el ancho */
+  }
+
+  .producto-form {
+    max-width: 100%; /* El formulario ocupa todo el ancho disponible */
+    padding: 0 10px;
+  }
+
+  .producto-form .form-buttons {
+    flex-direction: column; /* Los botones estarán uno debajo del otro */
+    gap: 10px;
   }
 
   .productos-grid-table thead {
@@ -141,6 +160,11 @@ td.descripcion {
     width: 170px;
     height: auto;
   }
+
+  .container {
+    overflow-x: hidden;
+  }
+
 }
 
 

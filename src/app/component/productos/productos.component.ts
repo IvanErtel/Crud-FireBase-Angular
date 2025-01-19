@@ -257,17 +257,16 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
         cantidad: this.productoForm.value.cantidad,
         descripcion: this.productoForm.value.descripcion,
         categoriaId: this.productoForm.value.categoriaId,
-        imagenUrl: '' // Se actualizará si se carga una imagen
+        imagenUrl: this.productoForm.value.imagenUrl || '', // Mantener la imagen si no se cambia
       };
   
       if (this.editingProductoId) {
-        // Actualización del producto
+        // Estamos editando un producto, así que actualizamos
         if (this.imagenArchivo) {
-          // Si se selecciona una nueva imagen, la subimos primero
-          this.productoService.agregarProductoConImagen(producto, this.imagenArchivo).subscribe({
-            next: (idProducto: string) => {
+          // Si hay una nueva imagen, actualizamos el producto con la nueva imagen
+          this.productoService.actualizarProductoConImagen(this.editingProductoId, producto, this.imagenArchivo).subscribe({
+            next: () => {
               console.log('Producto actualizado con nueva imagen.');
-              // Mostrar mensaje de éxito
               this.snackBar.open('Producto actualizado con éxito', 'Cerrar', {
                 duration: 3000,
                 panelClass: ['snackbar-exito']
@@ -284,17 +283,16 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
             }
           });
         } else {
+          // Si no hay nueva imagen, actualizamos el producto sin cambiar la imagen
           this.productoService.actualizarProducto(this.editingProductoId, producto).subscribe({
             next: () => {
-              console.log('Producto actualizado');
-              // Mostrar mensaje de éxito
+              console.log('Producto actualizado sin cambiar la imagen');
               this.snackBar.open('Producto actualizado con éxito', 'Cerrar', {
                 duration: 3000,
                 panelClass: ['snackbar-exito']
               });
               this.resetFormAndEditingState();
               this.cargarProductos();
-              this.mostrarFormulario = false;
             },
             error: (err: any) => {
               console.error('Error al actualizar producto:', err);
@@ -306,12 +304,11 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
           });
         }
       } else {
-        // Creación de un nuevo producto
+        // Crear un nuevo producto si no estamos editando
         if (this.imagenArchivo) {
           this.productoService.agregarProductoConImagen(producto, this.imagenArchivo).subscribe({
             next: (idProducto: string) => {
-              console.log('Producto con imagen agregado con ID:', idProducto);
-              // Mostrar mensaje de éxito
+              console.log('Producto creado con imagen con ID:', idProducto);
               this.snackBar.open('Producto creado con éxito', 'Cerrar', {
                 duration: 3000,
                 panelClass: ['snackbar-exito']
@@ -330,8 +327,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
         } else {
           this.productoService.agregarProducto(producto).subscribe({
             next: (idProducto: string) => {
-              console.log('Producto agregado sin imagen con ID:', idProducto);
-              // Mostrar mensaje de éxito
+              console.log('Producto creado sin imagen con ID:', idProducto);
               this.snackBar.open('Producto creado con éxito', 'Cerrar', {
                 duration: 3000,
                 panelClass: ['snackbar-exito']
@@ -350,7 +346,6 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
         }
       }
     } else {
-      // Mostrar mensaje si el formulario es inválido
       this.snackBar.open('Por favor, complete todos los campos', 'Cerrar', {
         duration: 3000,
         panelClass: ['snackbar-error']
@@ -361,8 +356,8 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
   editarProducto(producto: Producto): void {
     if (producto.id) {
       this.editingProductoId = producto.id;
-      
-      // Aquí nos aseguramos de que los valores del producto se asignen correctamente
+  
+      // Establecer los valores del producto en el formulario
       this.productoForm.setValue({
         nombre: producto.nombre,
         precioCompra: producto.precioCompra,
@@ -370,9 +365,11 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
         cantidad: producto.cantidad,
         descripcion: producto.descripcion,
         categoriaId: producto.categoriaId,
-        imagenUrl: producto.imagenUrl || '', // Aseguramos que imagenUrl no sea nulo o indefinido
+        imagenUrl: producto.imagenUrl || '', // Aseguramos que la imagenUrl actual se cargue
       });
-      
+  
+      // Limpiamos la imagen cargada (si existe) al editar
+      this.imagenArchivo = null;
     } else {
       console.log('Error: El Producto no tiene ID');
       this.snackBar.open('Error: El Producto no tiene ID', 'Cerrar', {
@@ -381,7 +378,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       });
     }
   
-    this.mostrarFormulario = true; // Asegura que el formulario esté visible
+    this.mostrarFormulario = true;
   
     // Desplaza hacia el formulario
     setTimeout(() => {
@@ -426,7 +423,9 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
 
   resetFormAndEditingState(): void {
     this.productoForm.reset();
+    this.mostrarFormulario = false; 
     this.editingProductoId = null;
+    this.imagenArchivo = null;
     this.cargarProductos();
   }
 
