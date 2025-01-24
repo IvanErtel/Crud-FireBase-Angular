@@ -19,6 +19,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 import { AuthService } from '../../services/auth.service';
 import { addDoc, collection } from 'firebase/firestore';
+import { ProductDetailDialogComponent } from '../product-detail-dialog/product-detail-dialog.component';
 
 
 @Component({
@@ -234,8 +235,13 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
     });
   }
   
-  obtenerNombreCategoria(categoriaId: string): string {
-    return this.categoriasMap.get(categoriaId) || 'Sin categoría';
+  obtenerNombreCategoria(categoriaId: string): Observable<string> {
+    return this.categorias$.pipe(
+      map(categorias => {
+        const categoria = categorias.find(c => c.id === categoriaId);
+        return categoria ? categoria.nombre : 'Sin categoría';
+      })
+    );
   }
   
   cargarProductos(): void {
@@ -529,6 +535,31 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       }
     });
   }
+
+  abrirDialogoDetalles(producto: Producto): void {
+    // Crear el mapa de nombres de categorías
+    this.categorias$.pipe(take(1)).subscribe(categorias => {
+      const categoriaNombreMap = new Map<string, string>();
+  
+      // Llenar el mapa con los nombres de las categorías
+      categorias.forEach(categoria => {
+        categoriaNombreMap.set(categoria.id!, categoria.nombre);
+      });
+  
+      // Abrir el diálogo y pasar los datos necesarios
+      const dialogRef = this.dialog.open(ProductDetailDialogComponent, {
+        width: '500px',
+        data: {
+          producto,
+          categorias: this.categorias$, 
+          categoriaNombreMap, 
+          editarProducto: (producto: Producto) => this.editarProducto(producto), 
+          eliminarProducto: (id: string | undefined) => this.eliminarProducto(id) // Función para eliminar
+        },
+      });
+    });
+  }
+  
    
 }
 

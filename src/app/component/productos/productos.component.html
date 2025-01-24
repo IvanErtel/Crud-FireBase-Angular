@@ -122,18 +122,19 @@
           <th>Imagen</th>
           <th>Nombre</th>
           <th>Categoría</th>
-          <th>Descripción</th>
+          <th>Cantidad</th>
           <th>Precios</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let producto of productosFiltrados$ | async">
+        <tr *ngFor="let producto of productosFiltrados$ | async" (click)="abrirDialogoDetalles(producto)" class="fila-clickable">
           <td>
             <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}" width="100">
           </td>
           <td>{{ producto.nombre }}</td>
-          <td>{{ obtenerNombreCategoria(producto.categoriaId) }}</td>
+          <td>{{ obtenerNombreCategoria(producto.categoriaId) | async }}</td>
+          <!--  
           <td [class.mostrar]="producto.mostrarDetalles" class="descripcion">
             <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
               {{ producto.descripcion | slice: 0:50 }}...
@@ -144,13 +145,14 @@
               <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
             </span>
             <span *ngIf="producto.descripcion.length <= 50">{{ producto.descripcion }}</span>
-          </td>
+          </td> -->
+          <td>{{ producto.cantidad }}</td>
           <td>
             Compra: {{ producto.precioCompra | currency }}<br />
             Venta: {{ producto.precioVenta | currency }}
           </td>
           <td class="producto-acciones">
-            <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
+            <button mat-icon-button [matMenuTriggerFor]="menuAcciones" (click)="$event.stopPropagation()">
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menuAcciones="matMenu">
