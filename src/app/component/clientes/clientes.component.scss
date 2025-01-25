@@ -6,7 +6,18 @@
   margin: 20px; /* Margen alrededor de todo el contenedor para evitar que los elementos toquen los bordes de la pantalla */
 }
 
-.left-panel, .right-panel {
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.right-panel {
   flex: 1;
   padding: 20px; /* Padding dentro de cada panel para no tener los elementos pegados a los bordes */
   box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Sombra suave para dar profundidad */
@@ -16,9 +27,38 @@
 
 /* Formulario de clientes */
 .cliente-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px; /* Espacio entre los campos del formulario */
+  width: 100%;
+  max-width: 500px;
+}
+
+.clientes-lista {
+  &.tarjetas {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+
+    .cliente-card {
+      width: 100%;
+      max-width: 400px;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  &.tabla {
+    table {
+      width: 100%;
+      margin-top: 1rem;
+
+      th, td {
+        text-align: left;
+        padding: 0.5rem;
+      }
+    }
+  }
 }
 
 mat-form-field {
@@ -52,65 +92,30 @@ td {
 
 button {
   margin-right: 8px; /* Espacio a la derecha de cada botón para evitar que se toquen */
+  min-width: 120px;
 }
 
 /* Estilos para el botón de eliminar para que se destaque como una acción potencialmente destructiva */
 button[color="warn"] {
   border-color: #f44336;
-  color: #f44336;
+  color: #fff;
 }
 
-/* Estilos responsivos para pantallas pequeñas (max-width: 768px) */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column; /* Coloca los paneles uno encima del otro en pantallas pequeñas */
-    margin: 10px; /* Reduce el margen para aprovechar mejor el espacio */
-  }
-
-  .left-panel, .right-panel {
-    width: 100%; /* Los paneles ocupan todo el ancho disponible */
-  }
-
-  /* Estilo de la tabla de clientes */
-  table {
-    display: none; /* Ocultar la tabla en pantallas pequeñas */
-  }
-
-  /* Estilo en lugar de la tabla para pantallas pequeñas */
-  .cliente-card {
-    display: block; /* Mostrar la tarjeta para cada cliente */
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    background-color: #f9f9f9;
-  }
-
-  .cliente-card h3 {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-  }
-
-  .cliente-card p {
-    margin: 5px 0;
-    font-size: 14px;
-  }
-
-  .cliente-card button {
-    width: 100%; /* Los botones ocupan el 100% del ancho */
-    margin-top: 10px;
-  }
-
-  /* Muestra los clientes como tarjetas en vez de tabla */
-  .right-panel .cliente-card-container {
-    display: block;
-  }
-
-  /* Ajuste de la disposición de los botones */
-  .right-panel button {
-    margin-right: 0;
-    margin-bottom: 10px;
-    width: 100%; /* Asegura que los botones se ajusten en el móvil */
-  }
+.botones-superiores {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
 }
+
+.botones-superiores button {
+  margin-top: 10px; /* Esto agrega un poco de espacio entre el botón y la parte superior */
+}
+
+.botones-formulario {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+
+

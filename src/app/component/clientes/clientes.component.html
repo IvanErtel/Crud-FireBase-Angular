@@ -1,47 +1,71 @@
-<div class="container">
-  <div class="left-panel">
+  <div class="botones-superiores" *ngIf="!mostrarFormulario">
+    <!-- Botón para mostrar el formulario -->
+    <button mat-raised-button color="accent" (click)="toggleFormulario()">
+      Nuevo Cliente
+    </button>
+  </div>
+
+  <div *ngIf="mostrarFormulario" class="form-container">
     <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()" class="cliente-form">
       <mat-form-field appearance="fill">
         <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" placeholder="Nombre">
+        <input matInput formControlName="nombre" placeholder="Nombre" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Email</mat-label>
-        <input matInput formControlName="email" type="email" placeholder="Email">
+        <input matInput formControlName="email" type="email" placeholder="Email" />
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Teléfono</mat-label>
-        <input matInput formControlName="telefono" placeholder="Teléfono">
+        <input matInput formControlName="telefono" placeholder="Teléfono" />
       </mat-form-field>
 
-      <button mat-raised-button color="primary" type="submit">Guardar Cliente</button>
+      <!-- Botones debajo del formulario -->
+      <div class="botones-formulario">
+        <button mat-raised-button color="primary" type="submit">Guardar Cliente</button>
+        <button mat-raised-button color="warn" type="button" (click)="toggleFormulario()">Cancelar</button>
+      </div>
     </form>
   </div>
 
   <div class="right-panel">
     <h2>Lista de Clientes</h2>
-      <!-- Buscador de clientes -->
-      <mat-form-field appearance="fill">
-        <mat-label>Buscar Cliente</mat-label>
-        <input matInput placeholder="Buscar cliente" (input)="actualizarFiltro($event)" />
-      </mat-form-field>
 
-    <div *ngIf="clientesFiltrados$ | async as clientes; else loading">
-      <!-- Muestra clientes como tarjetas en vez de tabla -->
-      <div *ngFor="let cliente of clientes" class="cliente-card">
-        <h3>{{ cliente.nombre }}</h3>
-        <p>Email: {{ cliente.email }}</p>
-        <p>Teléfono: {{ cliente.telefono }}</p>
-        <div class="actions">
-          <button mat-button color="warn" (click)="deleteCliente(cliente.id)">Eliminar</button>
-          <button mat-button (click)="editCliente(cliente)">Editar</button>
-        </div>
-      </div>
+    <!-- Buscador de clientes -->
+    <mat-form-field appearance="fill">
+      <mat-label>Buscar Cliente</mat-label>
+      <input matInput placeholder="Buscar cliente" (input)="actualizarFiltro($event)" />
+    </mat-form-field>
+
+    <div *ngIf="cargandoClientes; else contenidoClientes">
+      <!-- Indicador de carga para clientes -->
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
-    <ng-template #loading>
-      Cargando clientes...
+
+    <ng-template #contenidoClientes>
+      <!-- Vista de la tabla, se adapta a todas las pantallas -->
+      <div class="clientes-lista">
+        <table mat-table [dataSource]="clientesDataSource" class="mat-elevation-z8">
+          <ng-container matColumnDef="nombre">
+            <th mat-header-cell *matHeaderCellDef> Nombre </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.nombre }} </td>
+          </ng-container>
+        
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef> Email </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.email }} </td>
+          </ng-container>
+        
+          <ng-container matColumnDef="telefono">
+            <th mat-header-cell *matHeaderCellDef> Teléfono </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.telefono }} </td>
+          </ng-container>
+        
+          <tr mat-header-row *matHeaderRowDef="['nombre', 'email', 'telefono']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['nombre', 'email', 'telefono'];"></tr>
+        </table>
+      </div>
     </ng-template>
   </div>
-</div>
