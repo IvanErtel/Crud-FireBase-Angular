@@ -18,6 +18,11 @@
       </mat-form-field>
 
       <mat-form-field appearance="fill">
+        <mat-label>Dirección</mat-label>
+        <input matInput formControlName="direccion" placeholder="Dirección" />
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
         <mat-label>Teléfono</mat-label>
         <input matInput formControlName="telefono" placeholder="Teléfono" />
       </mat-form-field>
@@ -39,8 +44,7 @@
       <input matInput placeholder="Buscar cliente" (input)="actualizarFiltro($event)" />
     </mat-form-field>
 
-    <div *ngIf="cargandoClientes; else contenidoClientes">
-      <!-- Indicador de carga para clientes -->
+    <div *ngIf="cargandoClientes; else contenidoClientes" class="spinner-container">
       <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
 
@@ -57,15 +61,65 @@
             <th mat-header-cell *matHeaderCellDef> Email </th>
             <td mat-cell *matCellDef="let cliente"> {{ cliente.email }} </td>
           </ng-container>
+
+          <ng-container matColumnDef="direccion">
+            <th mat-header-cell *matHeaderCellDef> Dirección </th>
+            <td mat-cell *matCellDef="let cliente"> {{ cliente.direccion }} </td>
+          </ng-container>
         
           <ng-container matColumnDef="telefono">
             <th mat-header-cell *matHeaderCellDef> Teléfono </th>
             <td mat-cell *matCellDef="let cliente"> {{ cliente.telefono }} </td>
           </ng-container>
+
+          <!-- Modifica las columnas de la tabla -->
+<ng-container matColumnDef="acciones">
+  <th mat-header-cell *matHeaderCellDef> Acciones </th>
+  <td mat-cell *matCellDef="let cliente">
+    <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menuAcciones="matMenu">
+      <button mat-menu-item (click)="editCliente(cliente)">Editar</button>
+      <button mat-menu-item (click)="deleteCliente(cliente.id)">Eliminar</button>
+    </mat-menu>
+  </td>
+</ng-container>
         
-          <tr mat-header-row *matHeaderRowDef="['nombre', 'email', 'telefono']"></tr>
-          <tr mat-row *matRowDef="let row; columns: ['nombre', 'email', 'telefono'];"></tr>
+          <tr mat-header-row *matHeaderRowDef="['nombre', 'email', 'direccion', 'telefono', 'acciones']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['nombre', 'email', 'direccion', 'telefono', 'acciones'];"></tr>
         </table>
       </div>
     </ng-template>
+  </div>
+
+  <div class="clientes-lista tarjetas">
+    <div *ngFor="let cliente of clientesDataSource.data" class="cliente-card">
+      <div class="info-mobile">
+        <div class="nombre-telefono">
+          <div><strong>{{ cliente.nombre }}</strong></div>
+          <div class="telefono">{{ cliente.telefono }}</div>
+        </div>
+        <div class="acciones-mobile">
+          <button mat-icon-button [matMenuTriggerFor]="menuAcciones">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menuAcciones="matMenu">
+            <button mat-menu-item (click)="editCliente(cliente)">
+              <mat-icon>edit</mat-icon>
+              <span>Editar</span>
+            </button>
+            <button mat-menu-item (click)="deleteCliente(cliente.id)">
+              <mat-icon>delete</mat-icon>
+              <span>Eliminar</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+      <!-- Info adicional si quieres mostrar -->
+      <div class="detalle-mobile" *ngIf="cliente.direccion">
+        <mat-icon>place</mat-icon>
+        {{ cliente.direccion }}
+      </div>
+    </div>
   </div>

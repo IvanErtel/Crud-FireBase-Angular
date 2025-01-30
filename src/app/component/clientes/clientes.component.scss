@@ -108,6 +108,7 @@ button[color="warn"] {
 }
 
 .botones-superiores button {
+  margin-left: 10px;
   margin-top: 10px; /* Esto agrega un poco de espacio entre el botón y la parte superior */
 }
 
@@ -117,5 +118,97 @@ button[color="warn"] {
   margin-top: 1rem;
 }
 
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh; /* Ajusta según necesidad */
+}
 
+.mat-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.mat-icon-button {
+  color: #3f51b5; // Color primario
+}
+@media (max-width: 767px) {
+  /* Ajustes para móvil */
+  .clientes-lista.tarjetas {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 15px;
+    gap: 1rem;
+    margin-top: 10px;
+  }
+
+  .cliente-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .info-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nombre-telefono {
+    flex-grow: 1;
+  }
+
+  .acciones-mobile {
+    margin-left: auto; /* Empuja el menú a la derecha */
+  }
+
+  .mat-icon-button {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .mat-icon {
+    font-size: 24px;
+  }
+
+  .detalle-mobile {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #666;
+  }
+
+  /* Ocultar tabla en móvil */
+  .right-panel .clientes-lista:not(.tarjetas) {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Ocultar tarjetas en desktop */
+  .clientes-lista.tarjetas {
+    display: none !important;
+  }
+  
+  /* Mostrar tabla en desktop */
+  .right-panel .clientes-lista {
+    display: block;
+  }
+
+  /* Ajustar posición del menú en desktop */
+  .mat-column-acciones {
+    text-align: right;
+  }
+}

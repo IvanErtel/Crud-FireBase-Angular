@@ -39,13 +39,32 @@
           <textarea matInput formControlName="descripcion" placeholder="Descripción"></textarea>
         </mat-form-field>
 
+        <!-- Campo Marca -->
+<mat-form-field appearance="fill">
+  <mat-label>Marca</mat-label>
+  <input matInput formControlName="marca" placeholder="Ej: Samsung, Nike">
+  <mat-error *ngIf="productoForm.get('marca')?.hasError('required')">
+    La marca es obligatoria
+  </mat-error>
+</mat-form-field>
+
         <mat-form-field appearance="fill">
           <mat-label>Categoría</mat-label>
-          <select matNativeControl formControlName="categoriaId">
-            <option *ngFor="let categoria of categorias$ | async" [value]="categoria.id">
+          
+          <mat-select formControlName="categoriaId">
+            <mat-option value="">Seleccione una categoría</mat-option>
+            <mat-option 
+              *ngFor="let categoria of categorias$ | async" 
+              [value]="categoria.id"
+            >
               {{ categoria.nombre }}
-            </option>
-          </select>
+            </mat-option>
+          </mat-select>
+        
+          <!-- Mensaje de error si no selecciona categoría -->
+          <mat-error *ngIf="productoForm.get('categoriaId')?.hasError('required')">
+            ¡La categoría es obligatoria!
+          </mat-error>
         </mat-form-field>
 
         <div class="form-group">
@@ -121,6 +140,7 @@
         <tr>
           <th>Imagen</th>
           <th>Nombre</th>
+          <th>Marca</th>
           <th>Categoría</th>
           <th>Cantidad</th>
           <th>Precios</th>
@@ -133,19 +153,8 @@
             <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}" width="100">
           </td>
           <td>{{ producto.nombre }}</td>
+          <td>{{ producto.marca }}</td>
           <td>{{ obtenerNombreCategoria(producto.categoriaId) | async }}</td>
-          <!--  
-          <td [class.mostrar]="producto.mostrarDetalles" class="descripcion">
-            <span *ngIf="producto.descripcion.length > 50 && !producto.mostrarDetalles">
-              {{ producto.descripcion | slice: 0:50 }}...
-              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = true">Ver Más</a>
-            </span>
-            <span *ngIf="producto.descripcion.length > 50 && producto.mostrarDetalles">
-              {{ producto.descripcion }}
-              <a href="#" (click)="$event.preventDefault(); producto.mostrarDetalles = false">Ver Menos</a>
-            </span>
-            <span *ngIf="producto.descripcion.length <= 50">{{ producto.descripcion }}</span>
-          </td> -->
           <td>{{ producto.cantidad }}</td>
           <td>
             Compra: {{ producto.precioCompra | currency }}<br />

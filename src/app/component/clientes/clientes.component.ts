@@ -14,6 +14,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-clientes',
@@ -27,7 +29,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatListModule,
     MatButtonModule,
     MatTableModule,
-    MatProgressSpinnerModule, 
+    MatProgressSpinnerModule,
+    MatMenuModule,
+    MatIconModule
   ],
   templateUrl: './clientes.component.html',
   styleUrl: './clientes.component.scss'
@@ -54,6 +58,7 @@ export class ClientesComponent implements OnInit, OnDestroy {
     this.clienteForm = this.fb.group({
       nombre: ['', Validators.required],
       email: ['', [Validators.email]],
+      direccion: ['', Validators.required],
       telefono: ['', Validators.required],
     });
   }
@@ -148,13 +153,24 @@ export class ClientesComponent implements OnInit, OnDestroy {
   }
 
   editCliente(cliente: Cliente): void {
-    // Rellenar el formulario con los datos del cliente a editar
+    this.mostrarFormulario = true; // Abre el formulario
+    
+    // Rellena el formulario con datos del cliente (maneja campos vacíos)
     this.editingClienteId = cliente.id;
-    this.clienteForm.setValue({
-      nombre: cliente.nombre,
-      email: cliente.email,
-      telefono: cliente.telefono
+    this.clienteForm.patchValue({
+      nombre: cliente.nombre || '',
+      email: cliente.email || '',
+      direccion: cliente.direccion || '', // Campo nuevo con valor por defecto
+      telefono: cliente.telefono || ''
     });
+  
+    // Desplazar al formulario 
+    setTimeout(() => {
+      document.querySelector('.cliente-form')?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 0);
   }
 
   deleteCliente(clienteId: string): void {

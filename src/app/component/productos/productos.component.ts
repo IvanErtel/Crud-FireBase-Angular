@@ -61,7 +61,8 @@ precioCompra: ['', [Validators.required, Validators.min(0)]],
 precioVenta: ['', [Validators.required, Validators.min(0)]],
 cantidad: ['', [Validators.required, Validators.min(1)]],
 descripcion: ['', Validators.required],
-categoriaId: ['',],
+marca: ['', Validators.required],
+categoriaId: ['', Validators.required],
 imagenUrl: [null],
 });
 
@@ -257,6 +258,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
     if (this.productoForm.valid) {
       const producto: Producto = {
         nombre: this.productoForm.value.nombre,
+        marca: this.productoForm.value.marca,
         precioCompra: this.productoForm.value.precioCompra,
         precioVenta: this.productoForm.value.precioVenta,
         cantidad: this.productoForm.value.cantidad,
@@ -365,6 +367,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       // Establecer los valores del producto en el formulario
       this.productoForm.setValue({
         nombre: producto.nombre,
+        marca: producto.marca || '', // Aseguramos que la marca actual se cargue
         precioCompra: producto.precioCompra,
         precioVenta: producto.precioVenta || 0,
         cantidad: producto.cantidad,
