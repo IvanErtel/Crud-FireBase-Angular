@@ -1,13 +1,46 @@
-@media (max-width: 768px) {
-    mat-dialog-container {
-      padding: 0;
-      margin: 0;
-      width: 100%;
-    }
-    
-    img {
-      max-width: 100%;
-      height: auto;
+.producto-imagen {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.detalle-producto {
+  p {
+    margin: 0.5rem 0;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+
+    strong {
+      color: #3f51b5;
+      min-width: 100px;
+      display: inline-block;
     }
   }
-  
+}
+
+@media (max-width: 768px) {
+  mat-dialog-container {
+    padding: 10px;
+    margin: 0;
+    max-width: 100vw;
+    
+    .producto-imagen {
+      max-width: 100%;
+    }
+    
+    .detalle-producto p {
+      font-size: 0.9rem;
+    }
+    
+    mat-dialog-actions button {
+      margin: 4px;
+      padding: 8px;
+      min-width: auto;
+    }
+  }
+}

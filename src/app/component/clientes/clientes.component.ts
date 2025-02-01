@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable, Subject } from 'rxjs';
-import { defaultIfEmpty, map, startWith, takeUntil } from 'rxjs/operators';
+import { defaultIfEmpty, map, startWith, takeUntil, finalize } from 'rxjs/operators';
 import { FirebaseService } from '../../services/firebaseService.service';
 import { Cliente } from '../../interfaces/cliente.interface';
 import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
@@ -90,14 +90,22 @@ export class ClientesComponent implements OnInit, OnDestroy {
   loadClientes(): void {
     this.firebaseService.getClientes()
       .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(clientes => {
-        this.clientes$.next(clientes);
-        this.cargandoClientes = false;
-      }, error => {
-        this.snackBar.open('Error al cargar los clientes', 'Cerrar', {
-          duration: 3000
-        });
-        this.cargandoClientes = false;
+      .subscribe({
+        next: (clientes) => {
+          // Crear nueva referencia del array para forzar la detección de cambios
+          this.clientes$.next([...clientes]);
+          
+          // Actualizar el datasource directamente
+          this.clientesDataSource.data = [...clientes];
+          
+          this.cargandoClientes = false;
+        },
+        error: (error) => {
+          this.snackBar.open('Error al cargar los clientes', 'Cerrar', {
+            duration: 3000
+          });
+          this.cargandoClientes = false;
+        }
       });
   }
 
@@ -117,33 +125,41 @@ export class ClientesComponent implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.clienteForm.valid) {
+      this.cargandoGuardar = true;
       const clienteData: Cliente = this.clienteForm.value;
   
-      if (this.editingClienteId) {
-        // Si se está editando un cliente existente
-        this.firebaseService.updateCliente(this.editingClienteId, clienteData).subscribe({
-          next: () => {
-            this.snackBar.open('Cliente actualizado con éxito', 'Cerrar', { duration: 3000 });
-            this.loadClientes(); // Recargar la lista de clientes
-            this.toggleFormulario(); // Cerrar formulario
-          },
-          error: () => {
-            this.snackBar.open('Error al actualizar el cliente', 'Cerrar', { duration: 3000 });
+      const operacion$: Observable<void> = this.editingClienteId 
+        ? this.firebaseService.updateCliente(this.editingClienteId, clienteData)
+        : this.firebaseService.addCliente(clienteData as Omit<Cliente, 'id'>).pipe(
+            map(() => void 0) // Convertir a Observable<void>
+          );
+  
+      operacion$.pipe(
+        finalize(() => this.cargandoGuardar = false)
+      ).subscribe({
+        next: () => {
+          this.snackBar.open(`Cliente ${this.editingClienteId ? 'actualizado' : 'guardado'} con éxito`, 'Cerrar', { 
+            duration: 3000 
+          });
+          this.loadClientes();
+          this.toggleFormulario();
+          
+          if (this.editingClienteId) {
+            const index = this.clientesDataSource.data.findIndex(c => c.id === this.editingClienteId);
+            if (index > -1) {
+              const nuevosDatos = [...this.clientesDataSource.data];
+              nuevosDatos[index] = { ...nuevosDatos[index], ...clienteData };
+              this.clientesDataSource.data = nuevosDatos;
+            }
           }
-        });
-      } else {
-        // Si es un cliente nuevo
-        this.firebaseService.addCliente(clienteData).subscribe({
-          next: () => {
-            this.snackBar.open('Cliente guardado con éxito', 'Cerrar', { duration: 3000 });
-            this.loadClientes(); // Recargar la lista de clientes
-            this.toggleFormulario(); // Cerrar formulario
-          },
-          error: () => {
-            this.snackBar.open('Error al guardar el cliente', 'Cerrar', { duration: 3000 });
-          }
-        });
-      }
+        },
+        error: (err) => {
+          this.snackBar.open(`Error: ${err.message}`, 'Cerrar', { 
+            duration: 5000 
+          });
+          this.loadClientes();
+        }
+      });
     }
   }
 

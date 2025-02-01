@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../interfaces/producto.interface';
-import { BehaviorSubject, from, Observable, Subject, switchMap, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, Subject, switchMap, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,43 +14,56 @@ import { ActualizarCantidadProductoComponent } from '../../modal/actualizar-cant
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DialogoGenericoComponent } from '../dialog/dialogo-generico.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { MatMenuModule } from '@angular/material/menu';
 import { getStorage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 import { AuthService } from '../../services/auth.service';
 import { addDoc, collection } from 'firebase/firestore';
 import { ProductDetailDialogComponent } from '../product-detail-dialog/product-detail-dialog.component';
-
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MarcaService } from '../../services/marca.service';
+import { Marca } from '../../interfaces/marca.interface';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
   imports: [ ReactiveFormsModule, MatInputModule,
     MatButtonModule, MatSelectModule, MatIconModule,
-    CommonModule, MatMenuModule,
+    CommonModule, MatMenuModule, MatTableModule, MatPaginatorModule,
      MatDialogModule, ActualizarCantidadProductoComponent],
   templateUrl: './productos.component.html',
   styleUrls: ['./productos.component.scss'],
 })
 export class ProductosComponent implements OnInit {
   mostrarFormulario: boolean = false;
-  productos$: Observable<Producto[]> = this.productoService.obtenerProductos();
-  productosFiltrados$: Observable<Producto[]> = this.productoService.productos$;
   productoForm: FormGroup;
+  productos$: Observable<Producto[]> = this.productoService.obtenerProductos();
   editingProductoId: string | null = null;
   mostrarFormularioCategoria: boolean = false;
   categorias$: Observable<Categoria[]>;
   categoriaForm: FormGroup;
   categoriasMap = new Map<string, string>();
-  categoriaSeleccionada: string | null = null;
   imagenArchivo: File | null = null;
+  categoriaSeleccionada = new BehaviorSubject<string | null>(null);
+  dataSource = new MatTableDataSource<Producto>([]);  
+  productosFiltrados$: Observable<Producto[]> = this.dataSource.connect();
+  marcas$: Observable<Marca[]> = this.marcaService.obtenerMarcas();
+  marcasMap = new Map<string, string>();
+  mostrarFormularioMarca = false;
+  marcaForm: FormGroup;
   private unsubscribe$ = new Subject<void>();
-  private filtroSubject = new BehaviorSubject<string>('');
   private storage = getStorage();
+  private filtroSubject = new BehaviorSubject<string>('');
 
   constructor(private fb: FormBuilder, private productoService: ProductoService, 
-    private categoriaService: CategoriaService, public dialog: MatDialog,
+    private categoriaService: CategoriaService,  private marcaService: MarcaService, public dialog: MatDialog,
     private snackBar: MatSnackBar, private authService: AuthService) {
+
+      this.marcaForm = this.fb.group({
+        nombre: ['', Validators.required]
+      });
+
 this.categoriaForm = this.fb.group({
 nombre: ['', Validators.required],
 });
@@ -61,7 +74,7 @@ precioCompra: ['', [Validators.required, Validators.min(0)]],
 precioVenta: ['', [Validators.required, Validators.min(0)]],
 cantidad: ['', [Validators.required, Validators.min(1)]],
 descripcion: ['', Validators.required],
-marca: ['', Validators.required],
+marcaId: ['', Validators.required],
 categoriaId: ['', Validators.required],
 imagenUrl: [null],
 });
@@ -91,10 +104,30 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
 );
 }
 
-  ngOnInit(): void {
-    this.cargarCategorias();
-    this.cargarProductos();
-  }
+ngOnInit(): void {
+  this.cargarCategorias();
+  this.marcas$ = this.marcaService.obtenerMarcas();
+  this.cargarMarcas();
+  
+  combineLatest([
+    this.productoService.obtenerProductos(),
+    this.filtroSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ),
+    this.categoriaSeleccionada
+  ]).pipe(
+    map(([productos, filtro, categoria]) => {
+      return productos.filter(producto => {
+        const coincideNombre = producto.nombre.toLowerCase().includes(filtro.toLowerCase());
+        const coincideCategoria = categoria ? producto.categoriaId === categoria : true;
+        return coincideNombre && coincideCategoria;
+      });
+    })
+  ).subscribe(productos => {
+    this.dataSource.data = productos; // Actualizar datasource
+  });
+}
 
   toggleFormularioCategoria(): void {
     this.mostrarFormularioCategoria = !this.mostrarFormularioCategoria;
@@ -103,6 +136,71 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
     }
   }
   
+  cargarMarcas(): void {
+    this.marcaService.obtenerMarcas().pipe(take(1)).subscribe(marcas => {
+      this.marcasMap.clear();
+      marcas.forEach(marca => {
+        this.marcasMap.set(marca.id!, marca.nombre);
+      });
+    });
+  }
+
+  // Método para guardar Marca
+guardarMarca(): void {
+  if (this.marcaForm.valid) {
+    const marca = this.marcaForm.value;
+    this.marcaService.agregarMarca(marca).subscribe({
+      next: (id) => {
+        this.snackBar.open('Marca guardada con éxito', 'Cerrar', { 
+          duration: 3000,
+          panelClass: ['snackbar-exito']
+        });
+        this.mostrarFormularioMarca = false;
+        this.marcaForm.reset();
+      },
+      error: (err) => {
+        this.snackBar.open('Error al guardar la marca', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
+}
+
+// Método para eliminar Marca
+eliminarMarca(marcaId: string | undefined): void {
+  if (marcaId) {
+    this.marcaService.eliminarMarca(marcaId).subscribe({
+      next: () => {
+        this.snackBar.open('Marca eliminada', 'Cerrar', { 
+          duration: 3000,
+          panelClass: ['snackbar-exito']
+        });
+      },
+      error: (err) => {
+        this.snackBar.open('Error al eliminar la marca', 'Cerrar', {
+          duration: 3000,
+          panelClass: ['snackbar-error']
+        });
+      }
+    });
+  }
+}
+
+  cancelarFormularioMarca(): void {
+    this.marcaForm.reset();
+    this.mostrarFormularioMarca = false;
+  }
+
+ toggleFormularioMarca(): void {
+  this.mostrarFormularioMarca = !this.mostrarFormularioMarca;
+  if (this.mostrarFormularioMarca) {
+    this.mostrarFormulario = false;
+    this.mostrarFormularioCategoria = false;
+  }
+}
+
   toggleFormulario(): void {
     this.mostrarFormulario = !this.mostrarFormulario;
     if (this.mostrarFormulario) {
@@ -258,7 +356,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
     if (this.productoForm.valid) {
       const producto: Producto = {
         nombre: this.productoForm.value.nombre,
-        marca: this.productoForm.value.marca,
+        marcaId: this.productoForm.value.marcaId,
         precioCompra: this.productoForm.value.precioCompra,
         precioVenta: this.productoForm.value.precioVenta,
         cantidad: this.productoForm.value.cantidad,
@@ -367,7 +465,7 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       // Establecer los valores del producto en el formulario
       this.productoForm.setValue({
         nombre: producto.nombre,
-        marca: producto.marca || '', // Aseguramos que la marca actual se cargue
+        marcaId: producto.marcaId || '',
         precioCompra: producto.precioCompra,
         precioVenta: producto.precioVenta || 0,
         cantidad: producto.cantidad,
@@ -481,46 +579,15 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
       }
     });
   }
-
-  obtenerProductosFiltrados(): Observable<Producto[]> {
-    return new Observable<Producto[]>(observer => {
-      this.productos$.pipe(take(1)).subscribe(productos => {
-        let productosFiltrados = productos;
   
-        if (this.filtroSubject.getValue()) {
-          productosFiltrados = productosFiltrados.filter(producto =>
-            producto.nombre.toLowerCase().includes(this.filtroSubject.getValue().toLowerCase())
-          );
-        }
-  
-        if (this.categoriaSeleccionada) {
-          productosFiltrados = productosFiltrados.filter(producto =>
-            producto.categoriaId === this.categoriaSeleccionada
-          );
-        }
-  
-        // Agrega la propiedad mostrarDetalles a cada producto
-        productosFiltrados = productosFiltrados.map(producto => ({ ...producto, mostrarDetalles: false }));
-  
-        observer.next(productosFiltrados);
-        observer.complete();
-      });
-    });
+  filtrarPorCategoria(categoriaId: string | null): void {
+    this.categoriaSeleccionada.next(categoriaId);
   }
-  
-  
+
   filtrarProductos(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const filtro = input.value.trim(); // Aseguramos que no haya espacios extra
-    this.filtroSubject.next(filtro); // Actualiza el filtro
+    this.filtroSubject.next(input.value.trim());
   }
-
-    // Filtrar por categoría
-    filtrarProductosPorCategoria(event: any): void {
-      this.categoriaSeleccionada = event.value;
-      this.productosFiltrados$ = this.obtenerProductosFiltrados();
-    }
-    
 
   abrirDialogoActualizarCantidad(producto: Producto): void {
     const nombreCategoria = this.getCategoriaNombre(producto.categoriaId);
@@ -540,29 +607,40 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
   }
 
   abrirDialogoDetalles(producto: Producto): void {
-    // Crear el mapa de nombres de categorías
-    this.categorias$.pipe(take(1)).subscribe(categorias => {
+    // Combinar observables de categorías y marcas
+    combineLatest([
+      this.categorias$.pipe(take(1)),
+      this.marcas$.pipe(take(1))
+    ]).subscribe(([categorias, marcas]) => {
+      // Crear mapas para nombres
       const categoriaNombreMap = new Map<string, string>();
+      const marcaNombreMap = new Map<string, string>();
   
-      // Llenar el mapa con los nombres de las categorías
+      // Llenar mapa de categorías
       categorias.forEach(categoria => {
         categoriaNombreMap.set(categoria.id!, categoria.nombre);
       });
   
-      // Abrir el diálogo y pasar los datos necesarios
+      // Llenar mapa de marcas
+      marcas.forEach(marca => {
+        marcaNombreMap.set(marca.id!, marca.nombre);
+      });
+  
+      // Abrir diálogo con toda la información
       const dialogRef = this.dialog.open(ProductDetailDialogComponent, {
         width: '500px',
         data: {
           producto,
-          categorias: this.categorias$, 
-          categoriaNombreMap, 
-          editarProducto: (producto: Producto) => this.editarProducto(producto), 
-          eliminarProducto: (id: string | undefined) => this.eliminarProducto(id) // Función para eliminar
-        },
+          categorias: this.categorias$,
+          marcas: this.marcas$, // Nueva data
+          categoriaNombreMap,
+          marcaNombreMap, // Nuevo mapa
+          nombreMarca: marcaNombreMap.get(producto.marcaId) || 'Sin marca', // Nombre directo
+          editarProducto: (producto: Producto) => this.editarProducto(producto),
+          eliminarProducto: (id: string | undefined) => this.eliminarProducto(id)
+        }
       });
     });
   }
-  
-   
 }
 

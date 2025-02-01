@@ -8,7 +8,8 @@ export interface Producto {
   precioVenta?: number;
   proveedorId?: string;
   imagenUrl?: string;
-  marca: string;
+  marcaId: string;
+  fechaActualizacion?: string;
   userId?: string;
   mostrarDescripcion?: boolean; 
   mostrarDetalles?: boolean; 

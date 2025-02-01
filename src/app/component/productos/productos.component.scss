@@ -127,53 +127,110 @@ td.descripcion {
   transform: scale(0.98);
 }
 
-/* Cambios responsivos para móviles */
+.marca-form {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  
+  table {
+    width: 100%;
+    margin: 15px 0;
+    
+    th {
+      text-align: left;
+      padding: 8px;
+      background-color: #f5f5f5;
+    }
+    
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+  }
+}
+
+// Modifica productos.component.scss añadiendo estos estilos:
+
+/* Vista móvil */
+.productos-mobile {
+  display: none; /* Oculto por defecto */
+}
+
+.productos-grid-table {
+  display: table;
+}
+
 @media (max-width: 768px) {
-  .productos-container {
-    max-width: 100%;
-  }
-
   .productos-grid-table {
-    width: 100%; /* Asegurar que la tabla ocupa todo el ancho */
+    display: none; /* Oculta la tabla en móviles */
   }
+  
+  .productos-mobile {
+    display: block; /* Muestra el contenedor móvil */
+    
+    .producto-mobile-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-  .producto-form {
-    max-width: 100%; /* El formulario ocupa todo el ancho disponible */
-    padding: 0 10px;
+      img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+
+      .producto-mobile-info {
+        flex-grow: 1;
+        
+        h3 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1.1rem;
+        }
+
+        .mobile-details {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          font-size: 0.9rem;
+          color: #666;
+          margin-bottom: 0.5rem;
+        }
+
+        .mobile-prices {
+          display: flex;
+          flex-direction: column;
+          gap: 0.3rem;
+          font-size: 0.95rem;
+          
+          span:first-child {
+            color: #4CAF50;
+          }
+          span:last-child {
+            color: #F44336;
+          }
+        }
+      }
+
+      button {
+        align-self: flex-start;
+      }
+    }
   }
-
-  .producto-form .form-buttons {
-    flex-direction: column; /* Los botones estarán uno debajo del otro */
-    gap: 10px;
+  
+  .botones-superiores {
+    flex-wrap: wrap;
+    button {
+      flex: 1 1 150px;
+    }
   }
-
-  .productos-grid-table thead {
-    display: none; /* Ocultar encabezados de columnas en móvil */
-  }
-
-  .productos-grid-table td {
-    vertical-align: middle; /* Alinear contenido verticalmente */
-    padding: 5px;
-  }
-
-  .productos-grid-table td:nth-child(3) {
-    display: none; /* Ocultar columna de Categoría */
-  }
-
-  .productos-grid-table td:last-child {
-    text-align: right; /* Alinear los tres puntos a la derecha */
-  }
-
-  .productos-grid-table img {
-    display: block;
-    width: 170px;
-    height: auto;
-  }
-
-  .container {
-    overflow-x: hidden;
-  }
-
 }
 
 

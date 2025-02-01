@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, doc, addDoc, onSnapshot, deleteDoc } from '@angular/fire/firestore';
-import { Observable, BehaviorSubject, from, throwError, Subject } from 'rxjs';
+import { Observable, BehaviorSubject, from, throwError, Subject, of } from 'rxjs';
 import { catchError, map, switchMap, take, takeUntil } from 'rxjs/operators';
 import { Categoria } from '../interfaces/categoria.interface';
 import { AuthService } from './auth.service';
@@ -23,7 +23,7 @@ export class CategoriaService {
       switchMap(user => {
         if (!user) {
           this.categoriasSubject.next([]); // Limpia las categorías al cerrar sesión
-          return []; // Termina aquí si no hay usuario
+          return of(null); // Termina aquí si no hay usuario
         }
         const categoriasRef = collection(this.firestore, `users/${user.uid}/categorias`);
         return new Observable<void>(observer => {

@@ -1,16 +1,30 @@
 <h2 mat-dialog-title>Detalles del Producto</h2>
 <mat-dialog-content>
-  <img *ngIf="data.producto.imagenUrl" [src]="data.producto.imagenUrl" alt="{{ data.producto.nombre }}" width="100%">
-  <p><strong>Nombre:</strong> {{ data.producto.nombre }}</p>
-  <p><strong>Categoría:</strong> {{ obtenerNombreCategoria() }}</p>
-  <p><strong>Precio de Compra:</strong> {{ data.producto.precioCompra | currency }}</p>
-  <p><strong>Precio de Venta:</strong> {{ data.producto.precioVenta | currency }}</p>
-  <p><strong>Cantidad:</strong> {{ data.producto.cantidad }}</p>
-  <p><strong>Descripción:</strong> {{ data.producto.descripcion }}</p>
+  <img *ngIf="data.producto.imagenUrl" 
+       [src]="data.producto.imagenUrl" 
+       alt="{{ data.producto.nombre }}" 
+       class="producto-imagen">
+
+  <div class="detalle-producto">
+    <p><strong>Nombre:</strong> {{ data.producto.nombre }}</p>
+    <p><strong>Marca:</strong> {{ obtenerNombreMarca() }}</p>
+    <p><strong>Categoría:</strong> {{ obtenerNombreCategoria() }}</p>
+    <p><strong>Precio Compra:</strong> {{ data.producto.precioCompra | currency }}</p>
+    <p><strong>Precio Venta:</strong> {{ data.producto.precioVenta | currency }}</p>
+    <p><strong>Stock:</strong> {{ data.producto.cantidad }}</p>
+    <p><strong>Descripción:</strong> {{ data.producto.descripcion || 'N/A' }}</p>
+  </div>
 </mat-dialog-content>
+
 <mat-dialog-actions align="end">
-  <button mat-button color="primary" (click)="editar()">Editar</button>
-  <button mat-button color="warn" (click)="eliminar()">Eliminar</button>
-  <button mat-button mat-dialog-close>Cerrar</button>
+  <button mat-raised-button color="primary" (click)="editar()">
+    <mat-icon>edit</mat-icon> Editar
+  </button>
+  <button mat-raised-button color="warn" (click)="eliminar()">
+    <mat-icon>delete</mat-icon> Eliminar
+  </button>
+  <button mat-raised-button mat-dialog-close>
+    <mat-icon>close</mat-icon> Cerrar
+  </button>
 </mat-dialog-actions>
 

@@ -8,6 +8,12 @@
     <button mat-raised-button color="accent" (click)="toggleFormularioCategoria()">
       {{ mostrarFormularioCategoria ? 'Cerrar' : 'Nueva Categoría' }}
     </button>
+
+      <!-- Nuevo botón para Marca -->
+  <button mat-raised-button color="accent" (click)="toggleFormularioMarca()">
+    {{ mostrarFormularioMarca ? 'Cerrar' : 'Nueva Marca' }}
+  </button>
+
   </div>
 
     <!-- Formulario para cargar un nuevo producto -->
@@ -40,13 +46,19 @@
         </mat-form-field>
 
         <!-- Campo Marca -->
-<mat-form-field appearance="fill">
-  <mat-label>Marca</mat-label>
-  <input matInput formControlName="marca" placeholder="Ej: Samsung, Nike">
-  <mat-error *ngIf="productoForm.get('marca')?.hasError('required')">
-    La marca es obligatoria
-  </mat-error>
-</mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Marca</mat-label>
+          <mat-select formControlName="marcaId">
+            <mat-option value="">Seleccione una marca</mat-option>
+            <mat-option *ngFor="let marca of marcas$ | async" 
+                        [value]="marca.id">
+              {{ marca.nombre }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="productoForm.get('marcaId')?.hasError('required')">
+            ¡La marca es obligatoria!
+          </mat-error>
+        </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>Categoría</mat-label>
@@ -115,64 +127,179 @@
         </div>
       </form>
     </div>
+
+    <!-- Formulario para cargar una nueva Marca -->
+<div *ngIf="mostrarFormularioMarca">
+  <form [formGroup]="marcaForm" (ngSubmit)="guardarMarca()" class="marca-form">
+    <mat-form-field appearance="fill">
+      <mat-label>Nombre de la Marca</mat-label>
+      <input matInput formControlName="nombre" placeholder="Ej: Nike, Samsung">
+    </mat-form-field>
+
+    <h3>Lista de Marcas</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let marca of marcas$ | async">
+          <td>{{ marca.nombre }}</td>
+          <td>
+            <button mat-button color="warn" (click)="eliminarMarca(marca.id)">Eliminar</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="form-buttons">
+      <button mat-raised-button color="primary" type="submit">Guardar Marca</button>
+      <button mat-raised-button color="warn" type="button" 
+              (click)="cancelarFormularioMarca()">Cancelar</button>
+    </div>
+  </form>
+</div>
   </div>
 
   <div class="productos-container">
     <h2>Lista de Productos</h2>
     <mat-form-field appearance="fill">
       <mat-label>Buscar Producto</mat-label>
-      <input matInput (input)="filtrarProductos($event)" placeholder="Buscar producto por nombre">
+      <input matInput 
+             (input)="filtrarProductos($event)" 
+             placeholder="Buscar producto por nombre"
+             #searchInput>
     </mat-form-field>
   
     <mat-form-field appearance="fill">
-      <mat-label>Filtrar por Categoría</mat-label>
-      <mat-select (selectionChange)="filtrarProductosPorCategoria($event)">
-        <mat-option value="">Todas las Categorías</mat-option>
-        <mat-option *ngFor="let categoria of categorias$ | async" [value]="categoria.id">
+      <mat-label>Categoría</mat-label>
+      <mat-select (selectionChange)="filtrarPorCategoria($event.value)">
+        <mat-option value="">Todas las categorías</mat-option>
+        <mat-option *ngFor="let categoria of categorias$ | async" 
+                    [value]="categoria.id">
           {{ categoria.nombre }}
         </mat-option>
       </mat-select>
     </mat-form-field>
   
     <!-- Grilla de productos con tabla -->
-    <table class="productos-grid-table">
-      <thead>
-        <tr>
-          <th>Imagen</th>
-          <th>Nombre</th>
-          <th>Marca</th>
-          <th>Categoría</th>
-          <th>Cantidad</th>
-          <th>Precios</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let producto of productosFiltrados$ | async" (click)="abrirDialogoDetalles(producto)" class="fila-clickable">
-          <td>
-            <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}" width="100">
-          </td>
-          <td>{{ producto.nombre }}</td>
-          <td>{{ producto.marca }}</td>
-          <td>{{ obtenerNombreCategoria(producto.categoriaId) | async }}</td>
-          <td>{{ producto.cantidad }}</td>
-          <td>
-            Compra: {{ producto.precioCompra | currency }}<br />
-            Venta: {{ producto.precioVenta | currency }}
-          </td>
-          <td class="producto-acciones">
-            <button mat-icon-button [matMenuTriggerFor]="menuAcciones" (click)="$event.stopPropagation()">
-              <mat-icon>more_vert</mat-icon>
+    <table mat-table [dataSource]="dataSource" class="productos-grid-table">
+      <!-- Columna Imagen -->
+      <ng-container matColumnDef="imagen">
+        <th mat-header-cell *matHeaderCellDef>Imagen</th>
+        <td mat-cell *matCellDef="let producto">
+          <img *ngIf="producto.imagenUrl" 
+               [src]="producto.imagenUrl" 
+               alt="{{ producto.nombre }}" 
+               width="100"
+               class="producto-imagen">
+        </td>
+      </ng-container>
+    
+      <!-- Columna Nombre -->
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let producto">{{ producto.nombre }}</td>
+      </ng-container>
+    
+      <!-- Columna Marca -->
+      <ng-container matColumnDef="marca">
+        <th mat-header-cell *matHeaderCellDef>Marca</th>
+        <td mat-cell *matCellDef="let producto">
+          {{ marcasMap.get(producto.marcaId) || 'Sin marca' }}
+        </td>
+      </ng-container>
+    
+      <!-- Columna Categoría -->
+      <ng-container matColumnDef="categoria">
+        <th mat-header-cell *matHeaderCellDef>Categoría</th>
+        <td mat-cell *matCellDef="let producto">
+          {{ obtenerNombreCategoria(producto.categoriaId) | async }}
+        </td>
+      </ng-container>
+    
+      <!-- Columna Cantidad -->
+      <ng-container matColumnDef="cantidad">
+        <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+        <td mat-cell *matCellDef="let producto">{{ producto.cantidad }}</td>
+      </ng-container>
+    
+      <!-- Columna Precios -->
+      <ng-container matColumnDef="precios">
+        <th mat-header-cell *matHeaderCellDef>Precios</th>
+        <td mat-cell *matCellDef="let producto">
+          Compra: {{ producto.precioCompra | currency }}<br>
+          Venta: {{ producto.precioVenta | currency }}
+        </td>
+      </ng-container>
+    
+      <!-- Columna Acciones -->
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let producto" class="producto-acciones">
+          <button mat-icon-button 
+                  [matMenuTriggerFor]="menuAcciones" 
+                  (click)="$event.stopPropagation()">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menuAcciones="matMenu">
+            <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">
+              Actualizar Cantidad
             </button>
-            <mat-menu #menuAcciones="matMenu">
-              <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">Actualizar Cantidad</button>
-              <button mat-menu-item (click)="editarProducto(producto)">Editar</button>
-              <button mat-menu-item color="warn" (click)="eliminarProducto(producto.id)">Eliminar</button>
-            </mat-menu>
-          </td>
-        </tr>
-        
-      </tbody>
+            <button mat-menu-item (click)="editarProducto(producto)">
+              Editar
+            </button>
+            <button mat-menu-item 
+                    color="warn" 
+                    (click)="eliminarProducto(producto.id)">
+              Eliminar
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+    
+      <!-- Encabezados -->
+      <tr mat-header-row 
+          *matHeaderRowDef="['imagen', 'nombre', 'marca', 'categoria', 'cantidad', 'precios', 'acciones']"
+          class="encabezado-tabla"></tr>
+    
+      <!-- Filas -->
+      <tr mat-row 
+          *matRowDef="let row; columns: ['imagen', 'nombre', 'marca', 'categoria', 'cantidad', 'precios', 'acciones'];"
+          (click)="abrirDialogoDetalles(row)"
+          class="fila-clickable"></tr>
     </table>
   </div> 
-  
+  <div class="productos-mobile">
+    <div *ngFor="let producto of dataSource.data" class="producto-mobile-card" (click)="abrirDialogoDetalles(producto)">
+      <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}">
+      <div class="producto-mobile-info">
+        <h3>{{ producto.nombre }}</h3>
+        <div class="mobile-details">
+          <span>{{ marcasMap.get(producto.marcaId) || 'Sin marca' }}</span>
+          <span>{{ obtenerNombreCategoria(producto.categoriaId) | async }}</span>
+          <span>Stock: {{ producto.cantidad }}</span>
+        </div>
+        <div class="mobile-prices">
+          <span>Compra: {{ producto.precioCompra | currency }}</span>
+          <span>Venta: {{ producto.precioVenta | currency }}</span>
+        </div>
+      </div>
+      <button mat-icon-button [matMenuTriggerFor]="menuAccionesMobile">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menuAccionesMobile="matMenu">
+        <button mat-menu-item (click)="abrirDialogoActualizarCantidad(producto)">
+          Actualizar Cantidad
+        </button>
+        <button mat-menu-item (click)="editarProducto(producto)">
+          Editar
+        </button>
+        <button mat-menu-item color="warn" (click)="eliminarProducto(producto.id)">
+          Eliminar
+        </button>
+      </mat-menu>
+    </div>
+  </div>

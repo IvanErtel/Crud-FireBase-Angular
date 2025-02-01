@@ -28,15 +28,15 @@ export class FirebaseService {
   }
 
   // Agrega un nuevo cliente y devuelve un Observable del ID del documento creado
-  addCliente(cliente: Cliente): Observable<string> {
+  addCliente(cliente: Omit<Cliente, 'id'>): Observable<void> {
     return this.authService.getUserId().pipe(
       switchMap(userId => {
         if (!userId) {
           throw new Error('Usuario no autenticado');
         }
-        const userClientesRef = collection(this.db, `users/${userId}/clientes`);
-        return from(addDoc(userClientesRef, cliente)).pipe(
-          map(docRef => docRef.id)
+        const collectionRef = collection(this.db, `users/${userId}/clientes`);
+        return from(addDoc(collectionRef, cliente)).pipe(
+          map(() => void 0) // Convertir DocumentReference a void
         );
       })
     );
