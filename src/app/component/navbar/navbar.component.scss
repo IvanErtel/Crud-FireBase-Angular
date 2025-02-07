@@ -16,6 +16,32 @@
     top: 0;
     z-index: 1;
   }
+  .app-title {
+    flex-grow: 1;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid white;
+  }
+  
+  .user-name {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+  }
+  
   @media (max-width: 768px) {
     .sidenav {
       width: 45%; /* Hacer que el sidenav ocupe todo el ancho en pantallas pequeñas */

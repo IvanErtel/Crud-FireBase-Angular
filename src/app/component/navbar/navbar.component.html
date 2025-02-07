@@ -5,8 +5,9 @@
       <a mat-list-item routerLink="clientes">Clientes</a>
       <a mat-list-item routerLink="productos">Productos</a>
       <!-- <a mat-list-item routerLink="proveedor">Proveedores</a> -->
-      <button mat-raised-button color="primary" *ngIf="isLoggedIn" (click)="logout()">Cerrar Sesión</button>
-      <span *ngIf="isLoggedIn && email">{{email}}</span>
+      <button mat-raised-button color="primary" *ngIf="(isLoggedIn$ | async)" (click)="logout()">Cerrar Sesión</button>
+      <span *ngIf="(isLoggedIn$ | async) && email">{{ email }}</span>
+      
       <!-- Agrega más enlaces según necesites -->
     </mat-nav-list>
   </mat-sidenav>
@@ -15,7 +16,11 @@
       <button mat-icon-button (click)="toggleSidenav()">
         <mat-icon>menu</mat-icon>
       </button>
-      <span>Frama Cosmetic</span>
+      <span>Mi Inventario</span>
+      <div class="user-info" *ngIf="(isLoggedIn$ | async)">
+        <img [src]="userPhoto" alt="Avatar" class="avatar">
+        <span class="user-name">{{ userName }}</span>
+      </div>
     </mat-toolbar>
     <router-outlet></router-outlet>
   </mat-sidenav-content>

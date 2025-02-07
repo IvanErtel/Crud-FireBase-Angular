@@ -1,17 +1,92 @@
-.login-form, .logged-in-message {
-  max-width: 400px;
-  margin: 40px auto;
+.login-container {
+  max-width: 350px;
+  margin: 80px auto; // Centramos mejor el formulario
+  padding: 25px;
+  text-align: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.login-title {
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+.login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  align-items: center;
+  gap: 15px;
 }
 
 mat-form-field {
   width: 100%;
 }
 
-.logged-in-message h2 {
-  margin-bottom: 20px;
+button {
+  width: 100%;
+  margin-top: 15px;
+}
+
+/* Estilos para el perfil de usuario */
+.user-profile {
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 20px;
   text-align: center;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.user-profile h2 {
+  font-size: 22px;
+  font-weight: bold;
+  color: #333;
+}
+
+.avatar-section {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.current-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #3f51b5;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+.current-avatar:hover {
+  transform: scale(1.1);
+}
+
+.avatar-grid {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.avatar-grid img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border 0.2s;
+}
+
+.avatar-grid img.selected {
+  border: 2px solid #3f51b5;
+  transform: scale(1.1);
+}
+
+.avatar-grid img:hover {
+  transform: scale(1.15);
 }

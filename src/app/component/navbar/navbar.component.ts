@@ -7,6 +7,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { Router, NavigationEnd, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -24,18 +25,36 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-  isLoggedIn: boolean = false;
+  isLoggedIn$: Observable<boolean> = new Observable();
   email: string = '';
+  userPhoto: string = './assets/default-avatar.png';
+  userName: string = '';
   isSidenavOpen: boolean = false;  // Controla el estado del sidenav
   previousUrl: string = '';
 
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
-    // Cerrar el sidenav cuando la ruta cambie, pero solo si la ruta actual es diferente de la previa
+    // Verifica si el usuario está logueado
+    this.isLoggedIn$ = this.authService.getAuthState().pipe(
+      map(user => {
+        if (user) {
+          this.userName = user.email ? user.email.substring(0, 8) : 'Usuario';
+          return true;
+        } else {
+          return false;
+        }
+      })
+    );
+  
+    // Suscribirse al avatar$ para que el avatar se actualice en tiempo real
+    this.authService.avatar$.subscribe(avatar => {
+      this.userPhoto = avatar;
+    });
+
+    // Cerrar el sidenav cuando la ruta cambie
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
-        // Solo cerrar si la ruta ha cambiado
         if (this.previousUrl !== event.urlAfterRedirects) {
           this.isSidenavOpen = false;
         }
@@ -46,10 +65,9 @@ export class NavbarComponent implements OnInit {
 
   logout() {
     this.authService.logout().subscribe(() => {
-      this.isLoggedIn = false;
       this.router.navigate(['/login']);
     });
-  }
+  }  
 
   toggleSidenav() {
     this.isSidenavOpen = !this.isSidenavOpen;  // Al pulsar, se alterna entre abrir y cerrar el sidenav

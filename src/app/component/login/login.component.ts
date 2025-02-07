@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
+import { map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -29,7 +30,18 @@ export class LoginComponent implements OnInit {
   password = '';
   hide = true;
   hideConfirm = true;
-  isLoggedIn = false;
+  isLoggedIn$: Observable<boolean> = new Observable();
+  selectedAvatar = './assets/default-avatar.png';
+
+  availableAvatars = [
+    './assets/default-avatar.png',
+    './assets/default-avatar2.png',
+    './assets/default-avatar3.png',
+    './assets/default-avatar4.png',
+    './assets/default-avatar5.png'
+  ];
+  userName: string | null = null;
+  userPhoto: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -37,27 +49,35 @@ export class LoginComponent implements OnInit {
      private snackBar: MatSnackBar,
      private router: Router
      ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      confirmPassword: ['']
-    }, {Validators: this.passwordMatchValidator });
+      this.loginForm = this.fb.group({
+        email: ['', [Validators.required, Validators.email]],
+        password: ['', Validators.required]
+      }, { validators: this.passwordMatchValidator });
   }
   
   ngOnInit() {
+    this.isLoggedIn$ = this.authService.getAuthState().pipe(
+      map(user => !!user) // Devuelve true si hay usuario logueado
+    );
+  
     this.authService.getAuthState().subscribe(user => {
-      this.isLoggedIn = !!user;
-      if (this.isLoggedIn) {
-        // Extrae y oculta parte del email si es necesario
-        const email = user.email;
-        this.email = email.replace(/(.{2}).+(@.+)/, "$1***$2");
+      if (user) {
+        this.authService.getUserProfile().subscribe(profile => {
+          this.userName = user.displayName ? user.displayName : (user.email ? user.email.substring(0, 8) : 'Usuario');
+          this.userPhoto = profile.photoURL || './assets/default-avatar.png';
+        });
       }
     });
   }
   
+  
   passwordMatchValidator(fg: FormGroup) {
     const password = fg.get('password')?.value;
-    const confirmPassword = fg.get('confirmPassword')?.value;
+    const confirmPasswordControl = fg.get('confirmPassword');
+  
+    if (!confirmPasswordControl) return null; // No validar si no hay confirmación
+  
+    const confirmPassword = confirmPasswordControl.value;
     return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
@@ -65,31 +85,36 @@ export class LoginComponent implements OnInit {
     this.hide = !this.hide;
   }
 
+  changeAvatar(avatar: string) {
+    this.userPhoto = avatar;
+    this.authService.updateAvatar(avatar);
+    localStorage.setItem('selectedAvatar', avatar);
+  }
+  
   toggleConfirmVisibility() {
     this.hideConfirm = !this.hideConfirm;
   }
 
- login(): void {
+  login(): void {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).subscribe({
-        next: (result) => {
-          this.isLoggedIn = true;
-          this.snackBar.open('Login successful', 'Close', { duration: 2000 });
-          this.router.navigate(['/clientes']); // Ajusta esta ruta según sea necesario
+        next: () => {
+          this.snackBar.open('Login exitoso', 'Cerrar', { duration: 2000 });
+          this.router.navigate(['/clientes']);
         },
         error: (error) => {
-          console.error('Login failed', error);
-          this.snackBar.open('Login failed: ' + error.message, 'Close', { duration: 2000 });
+          this.snackBar.open('Error al iniciar sesión: ' + error.message, 'Cerrar', { duration: 2000 });
         },
       });
     }
   }
-
+  
   logout() {
     this.authService.logout().subscribe(() => {
-      this.isLoggedIn = false;
-      console.log('Usuario deslogueado con éxito');
+      this.userPhoto = './assets/default-avatar.png';
+      this.router.navigate(['/login']);
     });
   }
+  
 }
