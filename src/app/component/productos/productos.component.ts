@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductoService } from '../../services/producto.service';
 import { Producto } from '../../interfaces/producto.interface';
@@ -21,17 +21,17 @@ import { AuthService } from '../../services/auth.service';
 import { addDoc, collection } from 'firebase/firestore';
 import { ProductDetailDialogComponent } from '../product-detail-dialog/product-detail-dialog.component';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MarcaService } from '../../services/marca.service';
 import { Marca } from '../../interfaces/marca.interface';
+import { CustomPaginatorComponent } from "../custom-paginator/custom-paginator.component";
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [ ReactiveFormsModule, MatInputModule,
+  imports: [ReactiveFormsModule, MatInputModule,
     MatButtonModule, MatSelectModule, MatIconModule,
-    CommonModule, MatMenuModule, MatTableModule, MatPaginatorModule,
-     MatDialogModule, ActualizarCantidadProductoComponent],
+    CommonModule, MatMenuModule, MatTableModule,
+    MatDialogModule, ActualizarCantidadProductoComponent, CustomPaginatorComponent],
   templateUrl: './productos.component.html',
   styleUrls: ['./productos.component.scss'],
 })
@@ -50,12 +50,14 @@ export class ProductosComponent implements OnInit {
   productosFiltrados$: Observable<Producto[]> = this.dataSource.connect();
   marcas$: Observable<Marca[]> = this.marcaService.obtenerMarcas();
   marcasMap = new Map<string, string>();
+  isMobile: boolean = false;
   mostrarFormularioMarca = false;
   marcaForm: FormGroup;
+  pagedData: Producto[] = [];
   private unsubscribe$ = new Subject<void>();
   private storage = getStorage();
   private filtroSubject = new BehaviorSubject<string>('');
-
+  
   constructor(private fb: FormBuilder, private productoService: ProductoService, 
     private categoriaService: CategoriaService,  private marcaService: MarcaService, public dialog: MatDialog,
     private snackBar: MatSnackBar, private authService: AuthService) {
@@ -86,8 +88,8 @@ imagenUrl: [null],
 
     // Obtener las categorías
     this.categorias$ = this.categoriaService.obtenerCategorias();
-    
-
+    this.detectarDispositivo();
+ 
 // Filtra productos según el texto del filtro
 this.productosFiltrados$ = this.filtroSubject.pipe(
   switchMap(filtro => 
@@ -104,7 +106,15 @@ this.productosFiltrados$ = this.filtroSubject.pipe(
 );
 }
 
+private detectarDispositivo(): void {
+  this.isMobile = window.innerWidth < 768;
+  window.addEventListener('resize', () => {
+    this.isMobile = window.innerWidth < 768;
+  });
+}
+
 ngOnInit(): void {
+  this.detectarDispositivo();
   this.cargarCategorias();
   this.marcas$ = this.marcaService.obtenerMarcas();
   this.cargarMarcas();

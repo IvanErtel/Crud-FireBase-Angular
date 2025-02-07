@@ -185,7 +185,7 @@
     </mat-form-field>
   
     <!-- Grilla de productos con tabla -->
-    <table mat-table [dataSource]="dataSource" class="productos-grid-table">
+    <table mat-table [dataSource]="pagedData" class="productos-grid-table">
       <!-- Columna Imagen -->
       <ng-container matColumnDef="imagen">
         <th mat-header-cell *matHeaderCellDef>Imagen</th>
@@ -259,7 +259,7 @@
           </mat-menu>
         </td>
       </ng-container>
-    
+
       <!-- Encabezados -->
       <tr mat-header-row 
           *matHeaderRowDef="['imagen', 'nombre', 'marca', 'categoria', 'cantidad', 'precios', 'acciones']"
@@ -270,10 +270,16 @@
           *matRowDef="let row; columns: ['imagen', 'nombre', 'marca', 'categoria', 'cantidad', 'precios', 'acciones'];"
           (click)="abrirDialogoDetalles(row)"
           class="fila-clickable"></tr>
-    </table>
-  </div> 
+        </table>
+        <app-custom-paginator 
+        *ngIf="!isMobile" 
+        [data]="dataSource.data" 
+        [pageSize]="10" 
+        (pageData)="pagedData = $event">
+      </app-custom-paginator>
+    </div>
   <div class="productos-mobile">
-    <div *ngFor="let producto of dataSource.data" class="producto-mobile-card" (click)="abrirDialogoDetalles(producto)">
+    <div *ngFor="let producto of pagedData" class="producto-mobile-card" (click)="abrirDialogoDetalles(producto)">
       <img *ngIf="producto.imagenUrl" [src]="producto.imagenUrl" alt="{{ producto.nombre }}">
       <div class="producto-mobile-info">
         <h3>{{ producto.nombre }}</h3>
@@ -302,4 +308,10 @@
         </button>
       </mat-menu>
     </div>
+    <app-custom-paginator 
+    *ngIf="isMobile"
+    [data]="dataSource.data" 
+    [pageSize]="10" 
+    (pageData)="pagedData = $event">
+  </app-custom-paginator>
   </div>

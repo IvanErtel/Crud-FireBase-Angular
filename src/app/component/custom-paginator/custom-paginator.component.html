@@ -1,0 +1,6 @@
+<mat-paginator #paginator
+  [length]="data?.length || 0"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="pageSizeOptions"
+  (page)="updatePageData()">
+</mat-paginator>
