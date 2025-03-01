@@ -1,64 +1,82 @@
 <div class="venta-container">
-    <h2>Registrar Nueva Venta</h2>
-  
-    <!-- Formulario de Venta -->
-    <form [formGroup]="ventaForm" (ngSubmit)="onSubmit()">
-  
-      <!-- Selector de Cliente -->
+  <h2>Registrar Nueva Venta</h2>
+
+  <!-- Botón para mostrar/ocultar el formulario de nuevo cliente -->
+  <div class="botones-superiores">
+    <button mat-raised-button color="accent" (click)="toggleFormularioCliente()">
+      {{ mostrarFormularioCliente ? 'Cerrar Nuevo Cliente' : 'Agregar Nuevo Cliente' }}
+    </button>
+  </div>
+
+  <!-- Formulario para agregar un nuevo cliente (oculto por defecto) -->
+  <div *ngIf="mostrarFormularioCliente" class="form-container">
+    <form [formGroup]="nuevoClienteForm" (ngSubmit)="onSubmitCliente()" class="cliente-form">
       <mat-form-field appearance="fill">
-        <mat-label>Cliente</mat-label>
-        <mat-select formControlName="clienteId">
-          <mat-option *ngFor="let cliente of clientes$ | async" [value]="cliente.id">
-            {{ cliente.nombre }}
-          </mat-option>
-        </mat-select>
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" placeholder="Nombre del cliente">
       </mat-form-field>
-  
-      <!-- Selector de Producto -->
-      <div formArrayName="detalles" *ngFor="let detalle of detalles.controls; let i=index">
-        <div [formGroupName]="i" class="detalle-venta">
-          <mat-form-field appearance="fill">
-            <mat-label>Producto</mat-label>
-            <mat-select formControlName="productoId">
-              <mat-option *ngFor="let producto of productos$ | async" [value]="producto.id">
-                {{ producto.nombre }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-  
-          <!-- Cantidad -->
-          <mat-form-field appearance="fill">
-            <mat-label>Cantidad</mat-label>
-            <input matInput type="number" formControlName="cantidad">
-          </mat-form-field>
-  
-          <!-- Precio de Venta (Opcional, si quieres mostrarlo/editarlo) -->
-          <mat-form-field appearance="fill">
-            <mat-label>Precio de Venta</mat-label>
-            <input matInput type="number" formControlName="precioVenta">
-          </mat-form-field>
-  
-          <!-- Botón para eliminar detalle -->
-          <button mat-icon-button color="warn" (click)="eliminarDetalle(i)">
-            <mat-icon>delete</mat-icon>
-          </button>
-        </div>
+      <mat-form-field appearance="fill">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" placeholder="Email">
+      </mat-form-field>
+      <mat-form-field appearance="fill">
+        <mat-label>Teléfono</mat-label>
+        <input matInput formControlName="telefono" placeholder="Teléfono">
+      </mat-form-field>
+      <div class="botones-formulario">
+        <button mat-raised-button color="primary" type="submit">Guardar Cliente</button>
+        <button mat-raised-button color="warn" type="button" (click)="toggleFormularioCliente()">Cancelar</button>
       </div>
-  
-      <!-- Botón para agregar otro producto -->
-      <button mat-raised-button color="primary" type="button" (click)="agregarDetalle()">Agregar Producto</button>
-  
-      <!-- Total de la Venta -->
-      <div class="total-venta">
-        <h3>Total: {{ calcularTotal() | currency }}</h3>
-      </div>
-  
-      <!-- Botones de acción -->
-      <div class="acciones-venta">
-        <button mat-raised-button color="primary" type="submit">Registrar Venta</button>
-        <button mat-raised-button color="warn" type="button" (click)="cancelar()">Cancelar</button>
-      </div>
-  
     </form>
   </div>
-  
+
+  <!-- Formulario de venta -->
+  <form [formGroup]="ventaForm" (ngSubmit)="onSubmit()">
+    <mat-form-field appearance="fill">
+      <mat-label>Cliente</mat-label>
+      <mat-select formControlName="clienteId">
+        <mat-option *ngFor="let cliente of clientes$ | async" [value]="cliente.id">
+          {{ cliente.nombre }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Sección para agregar detalles de la venta -->
+    <div formArrayName="detalles" *ngFor="let detalle of detalles.controls; let i = index">
+       <div [formGroupName]="i" class="detalle-venta">
+        <mat-form-field appearance="fill">
+          <mat-label>Producto</mat-label>
+          <mat-select formControlName="productoId" (selectionChange)="onProductoChange(detalle)">
+            <mat-option *ngFor="let producto of productos$ | async" [value]="producto.id">
+              {{ producto.nombre }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Cantidad</mat-label>
+          <input matInput type="number" formControlName="cantidad">
+        </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Precio de Venta</mat-label>
+          <input matInput type="number" formControlName="precioVenta">
+        </mat-form-field>
+        <button mat-icon-button color="warn" (click)="eliminarDetalle(i)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <button mat-raised-button color="primary" type="button" (click)="agregarDetalle()">
+      Agregar Producto
+    </button>
+
+    <div class="total-venta">
+      <h3>Total: {{ calcularTotal() | currency }}</h3>
+    </div>
+
+    <div class="acciones-venta">
+      <button mat-raised-button color="primary" type="submit">Registrar Venta</button>
+      <button mat-raised-button color="warn" type="button" (click)="cancelar()">Cancelar</button>
+    </div>
+  </form>
+</div>

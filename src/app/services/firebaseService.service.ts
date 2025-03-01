@@ -2,10 +2,11 @@ import { Injectable, NgModule } from '@angular/core';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, deleteDoc, addDoc, getDocs, DocumentSnapshot, orderBy, query, startAfter, limit } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
-import { from, Observable, map, of, switchMap } from 'rxjs';
+import { from, Observable, map, of, switchMap, tap } from 'rxjs';
 import { Cliente } from '../interfaces/cliente.interface';
 import { updateDoc } from '@angular/fire/firestore';
 import { AuthService } from './auth.service';
+import { Venta } from '../interfaces/ventas.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -75,6 +76,20 @@ export class FirebaseService {
     );
   }
 
+  agregarVenta(venta: Venta): Observable<string> {
+    return this.authService.getUserId().pipe(
+      switchMap(userId => {
+        if (!userId) {
+          throw new Error('Usuario no autenticado');
+        }
+        const ventasRef = collection(this.db, `users/${userId}/ventas`);
+        return from(addDoc(ventasRef, venta)).pipe(
+          map(docRef => docRef.id)
+        );
+      })
+    );
+  }
+  
   // Actualiza un cliente existente y devuelve un Observable de void
   updateCliente(clienteId: string, cliente: Omit<Cliente, 'id'>): Observable<void> {
     return this.authService.getUserId().pipe(

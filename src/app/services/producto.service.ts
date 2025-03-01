@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, addDoc, updateDoc, doc, deleteDoc, query, where, collectionData, getDoc, setDoc } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, from, throwError } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, take } from 'rxjs/operators';
 import { Producto } from '../interfaces/producto.interface';
 import { AuthService } from './auth.service';
 import { CategoriaService } from './categoria.service';
@@ -69,6 +69,7 @@ eliminarProducto(id: string): Observable<void> {
 
 actualizarProducto(id: string, camposAActualizar: Partial<Producto>): Observable<void> {
   return this.authService.getUserId().pipe(
+    take(1),
     switchMap(userId => {
       // Validación 1: Usuario autenticado
       if (!userId) {
@@ -130,20 +131,21 @@ actualizarProducto(id: string, camposAActualizar: Partial<Producto>): Observable
   );
 }
 
-  obtenerProductoPorId(id: string): Observable<Producto> {
-    return this.authService.getUserId().pipe(
-      switchMap(userId => {
-        const productoRef = doc(this.firestore, `users/${userId}/productos/${id}`);
-        return from(getDoc(productoRef)).pipe(
-          map(snapshot => {
-            const data = snapshot.data();
-            if (!data) throw new Error('Producto no encontrado');
-            return { id, ...data } as Producto;
-          })
-        );
-      })
-    );
-  }
+obtenerProductoPorId(id: string): Observable<Producto> {
+  return this.authService.getUserId().pipe(
+    take(1),  // <-- Asegura que se tome solo el primer valor y se complete
+    switchMap(userId => {
+      const productoRef = doc(this.firestore, `users/${userId}/productos/${id}`);
+      return from(getDoc(productoRef)).pipe(
+        map(snapshot => {
+          const data = snapshot.data();
+          if (!data) throw new Error('Producto no encontrado');
+          return { id, ...data } as Producto;
+        })
+      );
+    })
+  );
+}
 
   agregarProductoConImagen(producto: Producto, imagenArchivo: File): Observable<string> {
     return this.authService.getUserId().pipe(

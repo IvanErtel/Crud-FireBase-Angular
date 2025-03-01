@@ -4,6 +4,7 @@
       <a mat-list-item routerLink="login">Login</a>
       <a mat-list-item routerLink="clientes">Clientes</a>
       <a mat-list-item routerLink="productos">Productos</a>
+      <a mat-list-item routerLink="ventas">Ventas</a>
       <!-- <a mat-list-item routerLink="proveedor">Proveedores</a> -->
       <button mat-raised-button color="primary" *ngIf="(isLoggedIn$ | async)" (click)="logout()">Cerrar Sesión</button>
       <span *ngIf="(isLoggedIn$ | async) && email">{{ email }}</span>
