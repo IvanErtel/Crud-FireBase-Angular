@@ -15,11 +15,15 @@ import { FirebaseService } from '../../services/firebaseService.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { VentaService } from '../../services/venta.service';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-ventas',
   standalone: true,
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule, CommonModule],
+  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, 
+    MatInputModule, MatSelectModule, MatIconModule, CommonModule,
+    MatTableModule],
   templateUrl: './ventas.component.html',
   styleUrls: ['./ventas.component.scss']
 })
@@ -28,6 +32,9 @@ export class VentasComponent implements OnInit {
   nuevoClienteForm: FormGroup;
   clientes$: Observable<Cliente[]> = of([]);
   productos$: Observable<Producto[]> = of([]);
+  ventas$: Observable<Venta[]> = of([]);
+  clientesMap: Map<string, string> = new Map();
+  productosMap: Map<string, string> = new Map();
   userId: string | null = null;
   
   mostrarFormularioCliente: boolean = false;
@@ -38,6 +45,7 @@ export class VentasComponent implements OnInit {
     private productoService: ProductoService,
     private authService: AuthService,
     private firebaseService: FirebaseService,
+    private ventaService: VentaService,
     private snackBar: MatSnackBar,
     private zone: NgZone
   ) {
@@ -55,13 +63,30 @@ export class VentasComponent implements OnInit {
   }
   
   ngOnInit(): void {
-    // Obtener el userId y cargar productos y clientes
     this.authService.getUserId().subscribe(userId => {
       this.userId = userId;
       if (userId) {
         this.productos$ = this.productoService.obtenerProductos();
-        // Supongamos que FirebaseService.getClientes(userId) retorna Observable<Cliente[]>
         this.clientes$ = this.firebaseService.getClientes();
+        
+        // Suscribirse para crear el mapa de clientes, filtrando los que tengan id
+        this.clientes$.subscribe(clientes => {
+          this.clientesMap = new Map(
+            clientes.filter(cliente => cliente.id)
+                    .map(cliente => [cliente.id!, cliente.nombre])
+          );
+        });
+        
+        // Suscribirse para crear el mapa de productos, filtrando los que tengan id
+        this.productos$.subscribe(productos => {
+          this.productosMap = new Map(
+            productos.filter(producto => producto.id)
+                     .map(producto => [producto.id!, producto.nombre])
+          );
+        });
+        
+        // Obtener las ventas desde la ruta correspondiente (users/{userId}/ventas)
+        this.ventas$ = this.ventaService.obtenerVentas(userId);
       }
     });
     this.agregarDetalle();

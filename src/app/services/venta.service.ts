@@ -23,6 +23,11 @@ import { Producto } from "../interfaces/producto.interface";
         }).catch((error) => observer.error(error));
       });
     }
+
+    obtenerVentas(userId: string): Observable<Venta[]> {
+      const ventasRef = this.afs.collection<Venta>(`users/${userId}/ventas`, ref => ref.orderBy('fecha', 'desc'));
+      return ventasRef.valueChanges({ idField: 'id' });
+    }
   
     private actualizarStock(detalles: DetalleVenta[]): void {
         detalles.forEach((detalle) => {

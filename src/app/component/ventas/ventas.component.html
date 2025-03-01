@@ -79,4 +79,45 @@
       <button mat-raised-button color="warn" type="button" (click)="cancelar()">Cancelar</button>
     </div>
   </form>
+  
+</div>
+<!-- Nueva sección: Lista de Ventas -->
+<div class="ventas-lista" style="margin-top: 2rem;">
+  <h2>Ventas Registradas</h2>
+  <!-- Usamos el async pipe para suscribirnos a ventas$ -->
+<table mat-table [dataSource]="(ventas$ | async) || []" class="mat-elevation-z8">
+    
+    <!-- Columna Cliente -->
+    <ng-container matColumnDef="cliente">
+      <th mat-header-cell *matHeaderCellDef> Cliente </th>
+      <td mat-cell *matCellDef="let venta">
+        <!-- Aquí puedes mostrar el ID o, si lo deseas, mapear el cliente usando la lista de clientes -->
+        {{ clientesMap.get(venta.clienteId) || venta.clienteId }}
+      </td>
+    </ng-container>
+    
+    <!-- Columna Fecha -->
+    <ng-container matColumnDef="fecha">
+      <th mat-header-cell *matHeaderCellDef> Fecha y Hora </th>
+      <td mat-cell *matCellDef="let venta">
+        {{ (venta.fecha?.toDate ? venta.fecha.toDate() : venta.fecha) | date:'short' }}
+      </td>
+    </ng-container>
+    
+    <!-- Columna Detalles -->
+    <ng-container matColumnDef="detalles">
+      <th mat-header-cell *matHeaderCellDef> Detalles </th>
+      <td mat-cell *matCellDef="let venta">
+        <div *ngFor="let det of venta.detalles">
+          <!-- Puedes mostrar producto, cantidad y precio; por ahora se muestra el ID de producto -->
+          Producto: {{ productosMap.get(det.productoId) || det.productoId }}, Cantidad: {{ det.cantidad }}
+        </div>
+      </td>
+    </ng-container>
+    
+    <!-- Fila de encabezados -->
+    <tr mat-header-row *matHeaderRowDef="['cliente', 'fecha', 'detalles']"></tr>
+    <!-- Fila de datos -->
+    <tr mat-row *matRowDef="let row; columns: ['cliente', 'fecha', 'detalles'];"></tr>
+  </table>
 </div>
